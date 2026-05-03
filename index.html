@@ -24,10 +24,13 @@
              alt="Logo" class="w-10 h-10 md:w-12 md:h-12 rounded-2xl object-cover">
         <h1 class="text-2xl md:text-3xl font-bold neon">名人纪念馆</h1>
       </div>
-      <button onclick="connectWallet()" 
-              class="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold text-base md:text-lg hover:scale-105 transition-all text-center leading-tight">
-        连接钱包<br>进入空间
-      </button>
+      <div class="flex items-center gap-3">
+        <button onclick="connectWallet()" 
+                class="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold text-base md:text-lg hover:scale-105 transition-all text-center leading-tight">
+          连接钱包<br>进入空间
+        </button>
+        <button onclick="showAdmin()" class="px-5 py-3 text-sm glass rounded-3xl">👑 管理员</button>
+      </div>
     </nav>
 
     <!-- 英雄区 -->
@@ -42,42 +45,37 @@
       <h3 class="text-base font-medium mb-3 flex items-center gap-2"><i class="fas fa-fire text-orange-400"></i> 实时贡献动态</h3>
       <div class="overflow-hidden">
         <div class="marquee text-sm text-gray-300 whitespace-nowrap">
-          @用户A 上传了《合约跟单教程》 · +800积分　　@userB 报名黄金量化 · 解锁VIP　　@userC 生成推广海报 · 获得达人徽章　　@userD 签到7天 · 领取NFT　　
+          @用户A 上传了《合约跟单教程》 · +800积分　　@userB 报名黄金量化 · 解锁VIP　　@userC 生成推广海报 · 获得达人徽章　　
         </div>
       </div>
     </div>
 
-    <!-- 资料库（核心功能） -->
+    <!-- 推广海报 -->
     <div class="glass rounded-3xl p-8 mb-8">
-      <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3">
-        <span class="text-4xl">📚</span> 社群资料库
-      </h3>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="file-list">
-        <!-- 这里会动态显示文件 -->
-        <div class="bg-black/30 rounded-2xl p-5">
-          <p class="text-gray-400 text-sm">暂无资料</p>
-          <p class="text-xs text-gray-500 mt-1">管理员正在上传中...</p>
+      <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="text-4xl">📣</span> 推广中心</h3>
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <input id="promo-text" type="text" placeholder="输入你的推广语或署名" class="w-full glass rounded-2xl px-5 py-4 text-white placeholder-gray-400 focus:outline-none">
+          <button onclick="generatePoster()" class="mt-4 w-full bg-gradient-to-r from-pink-500 to-purple-600 py-4 rounded-3xl font-semibold text-lg hover:scale-105 transition">
+            生成我的专属海报
+          </button>
         </div>
-      </div>
-
-      <div class="mt-6 text-center text-purple-400 text-sm cursor-pointer hover:underline" onclick="alert('管理员上传功能开发中...')">
-        + 添加新资料（仅管理员可见）
+        <div id="poster-preview" class="hidden bg-black rounded-3xl aspect-video flex items-center justify-center border border-purple-500/30">
+          <canvas id="poster-canvas" width="600" height="300" class="max-w-full rounded-2xl shadow-2xl"></canvas>
+        </div>
       </div>
     </div>
 
-    <!-- 其他快速入口 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-      <div onclick="alert('精选产品区开发中...')" class="glass rounded-3xl p-8 text-center hover:scale-105 transition cursor-pointer">
-        <div class="text-5xl mb-4">⭐</div>
-        <h3 class="text-xl font-semibold">精选产品</h3>
-        <p class="text-gray-400">合约 · 量化 · 合作项目</p>
-      </div>
-      <div onclick="alert('推广中心开发中...')" class="glass rounded-3xl p-8 text-center hover:scale-105 transition cursor-pointer">
-        <div class="text-5xl mb-4">📣</div>
-        <h3 class="text-xl font-semibold">推广中心</h3>
-        <p class="text-gray-400">个性化海报生成</p>
-      </div>
+    <!-- 精选产品区 -->
+    <div class="glass rounded-3xl p-8 mb-8">
+      <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="text-4xl">⭐</span> 精选产品</h3>
+      <div class="space-y-6" id="product-list"></div>
+    </div>
+
+    <!-- 资料库（已可动态添加） -->
+    <div class="glass rounded-3xl p-8">
+      <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="text-4xl">📚</span> 社群资料库</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="file-list"></div>
     </div>
 
     <div class="text-center mt-12 text-gray-500 text-sm">
@@ -85,49 +83,141 @@
     </div>
   </div>
 
+  <!-- 管理员后台弹窗 -->
+  <div id="admin-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+    <div class="glass max-w-lg w-full mx-4 rounded-3xl p-8">
+      <h3 class="text-2xl font-bold mb-6">👑 管理员后台</h3>
+      <input id="new-file-name" type="text" placeholder="资料名称" class="w-full glass rounded-2xl px-5 py-4 mb-4 text-white placeholder-gray-400">
+      <input id="new-file-link" type="text" placeholder="IPFS链接 (https://...)" class="w-full glass rounded-2xl px-5 py-4 mb-6 text-white placeholder-gray-400">
+      <button onclick="addFile()" class="w-full py-4 bg-green-600 rounded-3xl font-semibold">添加资料到库</button>
+      <button onclick="hideAdmin()" class="mt-4 w-full py-4 text-gray-400">关闭</button>
+    </div>
+  </div>
+
   <script>
+    let connectedAddress = null;
+    let participatedProducts = new Set();
+    let files = [
+      { name: "新手合约跟单教程.pdf", type: "文档", link: "#" },
+      { name: "黄金量化策略讲解.mp4", type: "视频", link: "#" }
+    ];
+
+    const products = [
+      { id: 1, name: "黄金量化策略", desc: "稳定跟单，月化15%-30%" },
+      { id: 2, name: "BTC 永续合约信号", desc: "每日专业信号" },
+      { id: 3, name: "新项目早期份额", desc: "限量合作名额" }
+    ];
+
     async function connectWallet() {
       const status = document.getElementById('wallet-status');
       status.innerHTML = "🔄 正在连接...";
       try {
         if (window.deboxWallet) {
           await window.deboxWallet.connect();
-          status.innerHTML = `✅ DeBox 已连接`;
+          connectedAddress = window.deboxWallet.address;
         } else if (window.phantom?.solana) {
           await window.phantom.solana.connect();
-          status.innerHTML = `✅ Phantom 已连接`;
-        } else {
-          alert("请在 DeBox 或 Phantom 中打开此页面");
+          connectedAddress = window.phantom.solana.publicKey.toString();
         }
+        status.innerHTML = `✅ 已连接`;
+        renderProducts();
       } catch (e) {
         status.innerHTML = "❌ 连接失败";
       }
     }
 
-    // 示例资料（后面会改成动态从 IPFS 读取）
-    const sampleFiles = [
-      { name: "新手合约跟单教程.pdf", type: "文档", link: "#" },
-      { name: "黄金量化策略视频.mp4", type: "视频", link: "#" },
-      { name: "常用工具合集.zip", type: "工具", link: "#" }
-    ];
+    function renderProducts() {
+      const container = document.getElementById('product-list');
+      container.innerHTML = products.map(p => `
+        <div class="glass rounded-3xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h4 class="font-semibold text-lg">${p.name}</h4>
+            <p class="text-gray-400">${p.desc}</p>
+          </div>
+          <button onclick="toggleParticipation(${p.id})" id="btn-${p.id}"
+                  class="px-8 py-3 rounded-3xl font-medium ${participatedProducts.has(p.id) ? 'bg-green-600' : 'bg-purple-600'}">
+            ${participatedProducts.has(p.id) ? '✅ 已参与 (点击退出)' : '立即参与'}
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function toggleParticipation(id) {
+      if (!connectedAddress) return alert("请先连接钱包");
+      if (participatedProducts.has(id)) {
+        if (confirm("确定退出？退出后高级权限将关闭")) participatedProducts.delete(id);
+      } else {
+        participatedProducts.add(id);
+        alert("🎉 参与成功！已解锁高级权限并获得积分");
+      }
+      renderProducts();
+    }
+
+    function showLibrary() {
+      alert("📚 资料库已支持动态添加！\n管理员可通过后台添加更多文件");
+    }
+
+    function showAdmin() {
+      if (!connectedAddress) return alert("请先连接钱包");
+      document.getElementById('admin-modal').classList.remove('hidden');
+    }
+
+    function hideAdmin() {
+      document.getElementById('admin-modal').classList.add('hidden');
+    }
+
+    function addFile() {
+      const name = document.getElementById('new-file-name').value || "新资料";
+      const link = document.getElementById('new-file-link').value || "#";
+      files.unshift({ name, type: "文档", link });
+      renderFiles();
+      hideAdmin();
+      alert("✅ 资料已添加到资料库！");
+    }
 
     function renderFiles() {
       const container = document.getElementById('file-list');
-      container.innerHTML = sampleFiles.map(file => `
-        <div class="glass rounded-2xl p-5 hover:bg-white/10 transition cursor-pointer" onclick="window.open('${file.link}', '_blank')">
-          <div class="flex items-start gap-4">
-            <div class="text-4xl flex-shrink-0">${file.type === '视频' ? '🎥' : file.type === '文档' ? '📄' : '🛠️'}</div>
-            <div>
-              <p class="font-medium">${file.name}</p>
-              <p class="text-xs text-gray-400 mt-1">${file.type}</p>
-            </div>
+      container.innerHTML = files.map(f => `
+        <div onclick="window.open('${f.link}','_blank')" class="glass rounded-3xl p-6 hover:bg-white/10 transition cursor-pointer flex gap-4 items-center">
+          <span class="text-5xl">📄</span>
+          <div>
+            <p class="font-medium">${f.name}</p>
+            <p class="text-xs text-gray-400">IPFS 永久存储</p>
           </div>
         </div>
       `).join('');
     }
 
-    // 页面加载时渲染
-    window.onload = renderFiles;
+    function generatePoster() {
+      // 之前的海报生成代码保持可用
+      const text = document.getElementById('promo-text').value || "我是推广达人";
+      const canvas = document.getElementById('poster-canvas');
+      const ctx = canvas.getContext('2d');
+      const preview = document.getElementById('poster-preview');
+
+      ctx.fillStyle = '#1a0033'; ctx.fillRect(0,0,600,300);
+      const grad = ctx.createLinearGradient(0,0,600,300);
+      grad.addColorStop(0,'#4c1d95'); grad.addColorStop(1,'#1e3a8a');
+      ctx.fillStyle = grad; ctx.fillRect(0,0,600,300);
+
+      ctx.font = 'bold 48px Arial'; ctx.fillStyle = '#fff';
+      ctx.fillText('名人纪念馆', 50, 100);
+      ctx.font = '28px Arial'; ctx.fillStyle = '#c4d0ff';
+      ctx.fillText(text, 50, 180);
+
+      preview.classList.remove('hidden');
+      setTimeout(() => {
+        const a = document.createElement('a');
+        a.download = '推广海报.png';
+        a.href = canvas.toDataURL();
+        a.click();
+      }, 600);
+    }
+
+    window.onload = () => {
+      renderFiles();
+      renderProducts();
+    };
   </script>
 </body>
 </html>
