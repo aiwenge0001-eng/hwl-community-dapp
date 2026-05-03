@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>好会聊加密 · 社群空间</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 100%); font-family: system-ui; }
+    .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.15); }
+    .neon { text-shadow: 0 0 15px rgba(168, 85, 247, 0.8); }
+  </style>
+</head>
+<body class="min-h-screen text-white">
+  <div class="max-w-6xl mx-auto p-6">
+
+    <!-- 顶部导航 -->
+    <nav class="flex justify-between items-center mb-12">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center text-3xl">🚀</div>
+        <h1 class="text-3xl font-bold neon">好会聊加密</h1>
+      </div>
+      <button onclick="connectWallet()" 
+              class="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold text-lg hover:scale-105 transition-all">
+        连接钱包进入空间
+      </button>
+    </nav>
+
+    <!-- 英雄区 -->
+    <div class="text-center mb-16">
+      <h2 class="text-6xl font-bold mb-6 neon">欢迎来到你的专属加密家园</h2>
+      <p class="text-2xl text-gray-300 max-w-2xl mx-auto">资料库 · 精选项目 · 推广工具 · 积分奖励 · 参与权限</p>
+      <div id="wallet-status" class="mt-8 text-lg"></div>
+    </div>
+
+    <!-- 快速入口卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="glass rounded-3xl p-10 text-center hover:scale-105 transition cursor-pointer" onclick="alert('资料库开发中...')">
+        <div class="text-6xl mb-6">📚</div>
+        <h3 class="text-2xl font-semibold mb-2">资料库</h3>
+        <p class="text-gray-400">视频、文档、工具、链接</p>
+      </div>
+      <div class="glass rounded-3xl p-10 text-center hover:scale-105 transition cursor-pointer" onclick="alert('精选产品区开发中...')">
+        <div class="text-6xl mb-6">⭐</div>
+        <h3 class="text-2xl font-semibold mb-2">精选产品</h3>
+        <p class="text-gray-400">合约 · 量化 · 合作项目</p>
+      </div>
+      <div class="glass rounded-3xl p-10 text-center hover:scale-105 transition cursor-pointer" onclick="alert('推广中心开发中...')">
+        <div class="text-6xl mb-6">📣</div>
+        <h3 class="text-2xl font-semibold mb-2">推广中心</h3>
+        <p class="text-gray-400">个性化海报 · 裂变推广</p>
+      </div>
+    </div>
+
+    <div class="text-center mt-16 text-gray-500">
+      DeBox 深度整合 · Web3 社群资料库 · MVP 版
+    </div>
+  </div>
+
+  <script>
+    async function connectWallet() {
+      const status = document.getElementById('wallet-status');
+      status.innerHTML = "🔄 正在连接钱包...";
+
+      try {
+        if (window.deboxWallet) {
+          await window.deboxWallet.connect();
+          const addr = window.deboxWallet.address;
+          status.innerHTML = `✅ DeBox 已连接<br><span class="text-sm">${addr}</span>`;
+        } else if (window.phantom?.solana) {
+          await window.phantom.solana.connect();
+          const addr = window.phantom.solana.publicKey.toString();
+          status.innerHTML = `✅ Phantom 已连接<br><span class="text-sm">${addr}</span>`;
+        } else {
+          alert("请在 DeBox 或 Phantom 钱包浏览器中打开此页面");
+        }
+      } catch (e) {
+        status.innerHTML = "❌ 连接失败，请重试";
+      }
+    }
+  </script>
+</body>
+</html>
