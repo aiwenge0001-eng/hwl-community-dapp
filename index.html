@@ -10,104 +10,149 @@
     body { background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 100%); font-family: system-ui; }
     .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.15); }
     .neon { text-shadow: 0 0 15px rgba(168, 85, 247, 0.8); }
-    .marquee { animation: marquee 30s linear infinite; }
-    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .page { display: none; }
+    .page.active { display: block; }
   </style>
 </head>
 <body class="min-h-screen text-white">
   <div class="max-w-6xl mx-auto p-5 md:p-6">
 
-    <!-- 顶部导航 -->
-    <nav class="flex justify-between items-center mb-10">
-      <div class="flex items-center gap-3">
-        <img src="https://miniature-peach-donkey.myfilebase.com/ipfs/QmUjRwaTVSpK9wvXvKJc7jdu5jjvb3XtADk9ZCtUB3bmWH" alt="Logo" class="w-12 h-12 rounded-2xl object-cover">
-        <h1 class="text-3xl font-bold neon">名人纪念馆</h1>
+    <!-- 全局顶部导航 -->
+    <nav class="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+      <div onclick="goToPage('home')" class="flex items-center gap-3 cursor-pointer">
+        <img src="https://miniature-peach-donkey.myfilebase.com/ipfs/QmUjRwaTVSpK9wvXvKJc7jdu5jjvb3XtADk9ZCtUB3bmWH" alt="Logo" class="w-10 h-10 rounded-2xl object-cover">
+        <h1 class="text-2xl font-bold neon">名人纪念馆</h1>
       </div>
-      <div class="flex gap-3">
-        <button onclick="connectWallet()" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold">连接钱包</button>
-        <button onclick="showAdmin()" class="px-6 py-4 glass rounded-3xl">👑 管理员</button>
-      </div>
+      <button onclick="connectWallet()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold">连接钱包</button>
     </nav>
 
-    <!-- 欢迎区 -->
-    <div class="text-center mb-12">
-      <h2 class="text-5xl font-bold mb-4 neon">欢迎来到你的专属加密家园</h2>
-      <p class="text-xl text-gray-300">资料库 · 精选项目 · 推广工具</p>
-      <div id="wallet-status" class="mt-6 text-base"></div>
-    </div>
+    <!-- ==================== 首页 ==================== -->
+    <div id="page-home" class="page active">
+      <div class="text-center mb-12">
+        <h2 class="text-5xl font-bold mb-4 neon">欢迎来到你的专属加密家园</h2>
+        <p class="text-xl text-gray-300">资料库 · 精选项目 · 推广工具</p>
+      </div>
 
-    <!-- 实时贡献动态 -->
-    <div class="glass rounded-3xl p-5 mb-8">
-      <h3 class="text-base font-medium mb-3 flex items-center gap-2"><i class="fas fa-fire text-orange-400"></i> 实时贡献动态</h3>
-      <div class="overflow-hidden">
-        <div class="marquee text-sm text-gray-300 whitespace-nowrap">
-          @用户A 上传了《合约跟单教程》 · +800积分　　@userB 报名黄金量化 · 解锁VIP　　@userC 生成推广海报 · 获得达人徽章　　@userD 签到7天 · 领取NFT　　
+      <!-- 实时动态 -->
+      <div class="glass rounded-3xl p-5 mb-8">
+        <h3 class="text-base font-medium mb-3 flex items-center gap-2"><i class="fas fa-fire text-orange-400"></i> 实时贡献动态</h3>
+        <div class="marquee text-sm text-gray-300 whitespace-nowrap overflow-hidden">
+          @用户A 上传了《合约跟单教程》 · +800积分　　@userB 报名黄金量化 · 解锁VIP　　@userC 生成推广海报 · 获得达人徽章　　
+        </div>
+      </div>
+
+      <!-- 成果展示 -->
+      <div class="glass rounded-3xl p-5 mb-12">
+        <h3 class="text-base font-medium mb-3 flex items-center gap-2"><i class="fas fa-trophy text-yellow-400"></i> 成果展示</h3>
+        <div class="marquee text-sm text-gray-300 whitespace-nowrap overflow-hidden">
+          🎉 用户A 跟单盈利 +28%　　🎉 用户B 海报裂变 47 人　　🎉 用户C 资料被置顶　　🎉 用户D 本月积分第3　　
+        </div>
+      </div>
+
+      <!-- 三大入口 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div onclick="goToPage('library')" class="glass rounded-3xl p-10 text-center hover:scale-105 transition cursor-pointer">
+          <div class="text-6xl mb-6">📚</div>
+          <h3 class="text-2xl font-semibold">社群资料库</h3>
+        </div>
+        <div onclick="goToPage('products')" class="glass rounded-3xl p-10 text-center hover:scale-105 transition cursor-pointer">
+          <div class="text-6xl mb-6">⭐</div>
+          <h3 class="text-2xl font-semibold">精选产品</h3>
+        </div>
+        <div onclick="goToPage('promo')" class="glass rounded-3xl p-10 text-center hover:scale-105 transition cursor-pointer">
+          <div class="text-6xl mb-6">📣</div>
+          <h3 class="text-2xl font-semibold">推广中心</h3>
         </div>
       </div>
     </div>
 
-    <!-- 成果展示 -->
-    <div class="glass rounded-3xl p-5 mb-12">
-      <h3 class="text-base font-medium mb-3 flex items-center gap-2"><i class="fas fa-trophy text-yellow-400"></i> 成果展示</h3>
-      <div class="overflow-hidden">
-        <div class="marquee text-sm text-gray-300 whitespace-nowrap">
-          🎉 用户A 跟单黄金量化盈利 +28%　　🎉 用户B 海报裂变 47 人　　🎉 用户C 资料被置顶　　🎉 用户D 本月积分第3　　
-        </div>
-      </div>
+    <!-- ==================== 资料库页面 ==================== -->
+    <div id="page-library" class="page">
+      <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
+      <h2 class="text-3xl font-bold mb-8">📚 社群资料库</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="file-list"></div>
     </div>
 
-    <!-- 三大入口 -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div onclick="goTo('library')" class="glass rounded-3xl p-10 text-center hover:scale-105 transition cursor-pointer">
-        <div class="text-6xl mb-6">📚</div>
-        <h3 class="text-2xl font-semibold">社群资料库</h3>
-        <p class="text-gray-400 mt-2">视频、文档、工具、链接</p>
-      </div>
+    <!-- ==================== 精选产品页面 ==================== -->
+    <div id="page-products" class="page">
+      <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
+      <h2 class="text-3xl font-bold mb-8">⭐ 精选产品</h2>
+      <div id="product-list" class="space-y-6"></div>
+    </div>
 
-      <div onclick="goTo('products')" class="glass rounded-3xl p-10 text-center hover:scale-105 transition cursor-pointer">
-        <div class="text-6xl mb-6">⭐</div>
-        <h3 class="text-2xl font-semibold">精选产品</h3>
-        <p class="text-gray-400 mt-2">合约 · 量化 · 合作项目</p>
-      </div>
-
-      <div onclick="goTo('promo')" class="glass rounded-3xl p-10 text-center hover:scale-105 transition cursor-pointer">
-        <div class="text-6xl mb-6">📣</div>
-        <h3 class="text-2xl font-semibold">推广中心</h3>
-        <p class="text-gray-400 mt-2">个性化海报生成</p>
+    <!-- ==================== 推广中心页面 ==================== -->
+    <div id="page-promo" class="page">
+      <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
+      <h2 class="text-3xl font-bold mb-8">📣 推广中心</h2>
+      <input id="user-name" type="text" placeholder="输入你的名字/署名" class="w-full glass rounded-2xl px-6 py-5 text-lg mb-6">
+      <button onclick="generateCustomPoster()" class="w-full py-5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-3xl text-xl font-bold">生成我的专属海报</button>
+      <div id="poster-preview" class="hidden mt-6 text-center">
+        <canvas id="poster-canvas" width="600" height="380" class="mx-auto rounded-3xl shadow-2xl"></canvas>
+        <button onclick="downloadPoster()" class="mt-6 w-full py-5 bg-white text-black rounded-3xl font-semibold">💾 保存海报</button>
       </div>
     </div>
 
   </div>
 
   <script>
-    async function connectWallet() {
-      const status = document.getElementById('wallet-status');
-      status.innerHTML = "🔄 正在请求钱包授权...";
+    let connectedAddress = null;
 
+    async function connectWallet() {
+      const status = document.getElementById('wallet-status') || {innerHTML: ''};
+      status.innerHTML = "🔄 正在请求授权...";
       try {
         if (window.deboxWallet) {
           await window.deboxWallet.connect();
-          status.innerHTML = `✅ DeBox 已成功连接`;
+          connectedAddress = window.deboxWallet.address;
         } else if (window.phantom?.solana) {
           await window.phantom.solana.connect();
-          status.innerHTML = `✅ Phantom 已成功连接`;
-        } else {
-          status.innerHTML = `❌ 请在 DeBox 或 Phantom 浏览器中打开`;
+          connectedAddress = window.phantom.solana.publicKey.toString();
         }
+        status.innerHTML = `✅ 已连接 ${connectedAddress ? connectedAddress.slice(0,8)+'...' : ''}`;
       } catch (e) {
-        status.innerHTML = `❌ 连接失败或用户取消`;
+        status.innerHTML = "❌ 连接失败";
       }
     }
 
-    function goTo(page) {
-      if (page === 'library') alert("📚 进入【社群资料库】\n\n管理员可上传文件（开发中）");
-      if (page === 'products') alert("⭐ 进入【精选产品区】\n\n支持参与/退出权限（开发中）");
-      if (page === 'promo') alert("📣 进入【推广中心】\n\n输入名字生成专属海报（开发中）");
+    function goToPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(`page-${page}`).classList.add('active');
     }
 
-    function showAdmin() {
-      alert("👑 管理员后台\n\n当前支持添加资料和模板（开发中）");
+    function generateCustomPoster() {
+      const name = document.getElementById('user-name').value.trim() || "推广达人";
+      const canvas = document.getElementById('poster-canvas');
+      const ctx = canvas.getContext('2d');
+      const preview = document.getElementById('poster-preview');
+
+      ctx.clearRect(0, 0, 600, 380);
+      ctx.fillStyle = '#1a0033';
+      ctx.fillRect(0, 0, 600, 380);
+
+      ctx.font = 'bold 52px Arial';
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.fillText('名人纪念馆', 300, 120);
+
+      ctx.font = 'bold 38px Arial';
+      ctx.fillStyle = '#c4d0ff';
+      ctx.fillText(name, 300, 220);
+
+      preview.classList.remove('hidden');
     }
+
+    function downloadPoster() {
+      const canvas = document.getElementById('poster-canvas');
+      const link = document.createElement('a');
+      link.download = `推广海报-${document.getElementById('user-name').value || '推广达人'}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // 初始化
+    window.onload = () => {
+      goToPage('home');
+    };
   </script>
 </body>
 </html>
