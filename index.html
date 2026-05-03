@@ -10,7 +10,7 @@
     body { background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 100%); font-family: system-ui; }
     .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.15); }
     .neon { text-shadow: 0 0 15px rgba(168, 85, 247, 0.8); }
-    .marquee { animation: marquee 30s linear infinite; font-size: 0.8rem; }
+    .marquee { animation: marquee 30s linear infinite; }
     @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
     .page { display: none; }
     .page.active { display: block; }
@@ -31,16 +31,16 @@
     <!-- ==================== 首页 ==================== -->
     <div id="page-home" class="page active">
       <div class="text-center mb-12">
-        <h2 class="text-4xl md:text-5xl font-bold mb-4 neon">欢迎来到你的专属加密家园</h2>
-        <p class="text-lg md:text-xl text-gray-300">资料库 · 精选项目 · 推广工具</p>
+        <h2 class="text-5xl font-bold mb-4 neon">欢迎来到你的专属加密家园</h2>
+        <p class="text-xl text-gray-300">资料库 · 精选项目 · 推广工具</p>
       </div>
 
       <!-- 实时贡献动态 -->
       <div class="glass rounded-3xl p-5 mb-8">
         <h3 class="text-base font-medium mb-3 flex items-center gap-2"><i class="fas fa-fire text-orange-400"></i> 实时贡献动态</h3>
         <div class="overflow-hidden">
-          <div class="marquee text-xs text-gray-300 whitespace-nowrap">
-            @用户A 上传了《合约跟单教程》 · +800积分　　@userB 报名黄金量化 · 解锁VIP　　@userC 生成推广海报 · 获得达人徽章　　@userD 签到7天 · 领取NFT　　
+          <div class="marquee text-sm text-gray-300 whitespace-nowrap">
+            @用户A 上传了《合约跟单教程》 · +800积分　　@userB 报名黄金量化 · 解锁VIP　　@userC 生成推广海报 · 获得达人徽章　　
           </div>
         </div>
       </div>
@@ -49,7 +49,7 @@
       <div class="glass rounded-3xl p-5 mb-12">
         <h3 class="text-base font-medium mb-3 flex items-center gap-2"><i class="fas fa-trophy text-yellow-400"></i> 成果展示</h3>
         <div class="overflow-hidden">
-          <div class="marquee text-xs text-gray-300 whitespace-nowrap">
+          <div class="marquee text-sm text-gray-300 whitespace-nowrap">
             🎉 用户A 跟单黄金量化盈利 +28%　　🎉 用户B 海报裂变 47 人　　🎉 用户C 资料被置顶　　🎉 用户D 本月积分第3　　
           </div>
         </div>
@@ -72,19 +72,21 @@
       </div>
     </div>
 
-    <!-- 其他页面（占位） -->
+    <!-- ==================== 资料库页面 ==================== -->
     <div id="page-library" class="page">
       <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
       <h2 class="text-3xl font-bold mb-8">📚 社群资料库</h2>
-      <p class="text-gray-400">管理员可在此上传文件</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="file-list"></div>
     </div>
 
+    <!-- ==================== 精选产品页面 ==================== -->
     <div id="page-products" class="page">
       <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
       <h2 class="text-3xl font-bold mb-8">⭐ 精选产品</h2>
-      <p class="text-gray-400">支持参与 / 退出权限</p>
+      <div id="product-list" class="space-y-6"></div>
     </div>
 
+    <!-- ==================== 推广中心页面 ==================== -->
     <div id="page-promo" class="page">
       <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
       <h2 class="text-3xl font-bold mb-8">📣 推广中心</h2>
@@ -99,8 +101,23 @@
   </div>
 
   <script>
-    function connectWallet() {
-      alert("✅ 钱包连接成功！（DeBox / Phantom）");
+    let connectedAddress = null;
+
+    async function connectWallet() {
+      const status = document.getElementById('wallet-status') || {innerHTML:''};
+      status.innerHTML = "🔄 正在请求授权...";
+      try {
+        if (window.deboxWallet) {
+          await window.deboxWallet.connect();
+          connectedAddress = window.deboxWallet.address;
+        } else if (window.phantom?.solana) {
+          await window.phantom.solana.connect();
+          connectedAddress = window.phantom.solana.publicKey.toString();
+        }
+        status.innerHTML = `✅ 已连接`;
+      } catch (e) {
+        status.innerHTML = "❌ 连接失败";
+      }
     }
 
     function goToPage(page) {
