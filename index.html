@@ -10,6 +10,8 @@
     body { background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 100%); font-family: system-ui; }
     .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.15); }
     .neon { text-shadow: 0 0 15px rgba(168, 85, 247, 0.8); }
+    .marquee { animation: marquee 35s linear infinite; }
+    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   </style>
 </head>
 <body class="min-h-screen text-white">
@@ -21,124 +23,85 @@
         <img src="https://miniature-peach-donkey.myfilebase.com/ipfs/QmUjRwaTVSpK9wvXvKJc7jdu5jjvb3XtADk9ZCtUB3bmWH" alt="Logo" class="w-12 h-12 rounded-2xl object-cover">
         <h1 class="text-3xl font-bold neon">名人纪念馆</h1>
       </div>
-      <div class="flex gap-3">
-        <button onclick="connectWallet()" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold">连接钱包</button>
-        <button onclick="showAdmin()" class="px-6 py-4 glass rounded-3xl">👑 管理员</button>
-      </div>
+      <button onclick="connectWallet()" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold">连接钱包</button>
     </nav>
 
-    <!-- 欢迎 + 个人中心 -->
+    <!-- 欢迎区 -->
     <div class="text-center mb-12">
       <h2 class="text-5xl font-bold mb-4 neon">欢迎来到你的专属加密家园</h2>
-      <div id="user-info" class="hidden mt-6">
-        <p class="text-lg">欢迎，<span id="user-address" class="font-mono"></span></p>
-        <p class="text-3xl font-bold text-purple-400">积分: <span id="points">1280</span></p>
+      <p class="text-xl text-gray-300">资料库 · 精选项目 · 推广工具</p>
+      <div id="wallet-status" class="mt-6 text-base"></div>
+    </div>
+
+    <!-- 实时贡献动态 -->
+    <div class="glass rounded-3xl p-5 mb-10">
+      <h3 class="text-base font-medium mb-3 flex items-center gap-2"><i class="fas fa-fire text-orange-400"></i> 实时贡献动态</h3>
+      <div class="overflow-hidden">
+        <div class="marquee text-sm text-gray-300 whitespace-nowrap">
+          @用户A 上传了《合约跟单教程》 · +800积分　　@userB 报名黄金量化 · 解锁VIP　　@userC 生成推广海报 · 获得达人徽章　　@userD 签到7天 · 领取NFT　　
+        </div>
       </div>
     </div>
 
-    <!-- 三大入口 -->
+    <!-- 成果展示滚动 -->
+    <div class="glass rounded-3xl p-5 mb-12">
+      <h3 class="text-base font-medium mb-3 flex items-center gap-2"><i class="fas fa-trophy text-yellow-400"></i> 成果展示</h3>
+      <div class="overflow-hidden">
+        <div class="marquee text-sm text-gray-300 whitespace-nowrap">
+          🎉 用户A 已成功跟单黄金量化盈利 +28%　　🎉 用户B 生成海报裂变 47 人　　🎉 用户C 贡献资料被置顶　　🎉 用户D 本月积分排行第3　　
+        </div>
+      </div>
+    </div>
+
+    <!-- 三大功能入口 -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div onclick="goTo('library')" class="glass rounded-3xl p-10 text-center hover:scale-105 transition cursor-pointer">
         <div class="text-6xl mb-6">📚</div>
-        <h3 class="text-2xl font-semibold">社群资料库</h3>
-        <p class="text-gray-400 mt-2">视频、文档、工具</p>
+        <h3 class="text-2xl font-semibold mb-2">社群资料库</h3>
+        <p class="text-gray-400">视频、文档、工具、链接</p>
       </div>
+
       <div onclick="goTo('products')" class="glass rounded-3xl p-10 text-center hover:scale-105 transition cursor-pointer">
         <div class="text-6xl mb-6">⭐</div>
-        <h3 class="text-2xl font-semibold">精选产品</h3>
-        <p class="text-gray-400 mt-2">合约 · 量化 · 项目</p>
+        <h3 class="text-2xl font-semibold mb-2">精选产品</h3>
+        <p class="text-gray-400">合约 · 量化 · 合作项目</p>
       </div>
+
       <div onclick="goTo('promo')" class="glass rounded-3xl p-10 text-center hover:scale-105 transition cursor-pointer">
         <div class="text-6xl mb-6">📣</div>
-        <h3 class="text-2xl font-semibold">推广中心</h3>
-        <p class="text-gray-400 mt-2">生成专属海报</p>
+        <h3 class="text-2xl font-semibold mb-2">推广中心</h3>
+        <p class="text-gray-400">个性化海报 · 裂变推广</p>
       </div>
     </div>
 
-  </div>
-
-  <!-- 管理员后台 -->
-  <div id="admin-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-    <div class="glass max-w-lg w-full mx-4 rounded-3xl p-8">
-      <h3 class="text-2xl font-bold mb-6">👑 管理员后台</h3>
-      <div class="space-y-6">
-        <div>
-          <h4 class="mb-2">添加资料</h4>
-          <input id="file-name" placeholder="资料名称" class="w-full glass rounded-2xl px-5 py-4 mb-3">
-          <input id="file-link" placeholder="IPFS链接" class="w-full glass rounded-2xl px-5 py-4">
-          <button onclick="addFile()" class="w-full mt-4 py-4 bg-green-600 rounded-3xl">添加</button>
-        </div>
-        <div>
-          <h4 class="mb-2">添加海报模板</h4>
-          <input id="template-link" placeholder="模板图片 IPFS 链接" class="w-full glass rounded-2xl px-5 py-4">
-          <button onclick="addTemplate()" class="w-full mt-4 py-4 bg-purple-600 rounded-3xl">添加模板</button>
-        </div>
-      </div>
-      <button onclick="hideAdmin()" class="mt-8 w-full py-4 text-gray-400">关闭</button>
+    <div class="text-center mt-16 text-gray-500 text-sm">
+      DeBox 深度整合 · Web3 社群资料库
     </div>
   </div>
 
   <script>
-    let connectedAddress = null;
-    let points = 1280;
-    let files = [];
-    let templates = ["https://miniature-peach-donkey.myfilebase.com/ipfs/QmUjRwaTVSpK9wvXvKJc7jdu5jjvb3XtADk9ZCtUB3bmWH"];
-
     async function connectWallet() {
+      const status = document.getElementById('wallet-status');
+      status.innerHTML = "🔄 正在连接钱包...";
       try {
         if (window.deboxWallet) {
           await window.deboxWallet.connect();
-          connectedAddress = window.deboxWallet.address;
+          status.innerHTML = `✅ DeBox 已连接`;
         } else if (window.phantom?.solana) {
           await window.phantom.solana.connect();
-          connectedAddress = window.phantom.solana.publicKey.toString();
+          status.innerHTML = `✅ Phantom 已连接`;
+        } else {
+          alert("请在 DeBox 或 Phantom 钱包中打开此页面");
         }
-        document.getElementById('user-info').classList.remove('hidden');
-        document.getElementById('user-address').textContent = connectedAddress ? connectedAddress.slice(0,8) + "..." : "";
-        alert("✅ 钱包连接成功！");
       } catch (e) {
-        alert("连接失败，请在 DeBox 或 Phantom 中打开");
-      }
-    }
-
-    function showAdmin() {
-      document.getElementById('admin-modal').classList.remove('hidden');
-    }
-
-    function hideAdmin() {
-      document.getElementById('admin-modal').classList.add('hidden');
-    }
-
-    function addFile() {
-      const name = document.getElementById('file-name').value;
-      const link = document.getElementById('file-link').value;
-      if (name && link) {
-        files.push({name, link});
-        alert("✅ 资料已添加！");
-        hideAdmin();
-      }
-    }
-
-    function addTemplate() {
-      const link = document.getElementById('template-link').value;
-      if (link) {
-        templates.push(link);
-        alert("✅ 新模板已添加！");
-        hideAdmin();
+        status.innerHTML = "❌ 连接失败";
       }
     }
 
     function goTo(page) {
-      if (page === 'library') alert("📚 进入资料库（当前支持管理员添加）");
-      if (page === 'products') alert("⭐ 进入精选产品区（支持参与/退出）");
-      if (page === 'promo') alert("📣 进入推广中心（输入名字生成海报）");
-    }
-
-    // 每日签到
-    function dailyCheckIn() {
-      if (!connectedAddress) return alert("请先连接钱包");
-      points += 100;
-      alert("🎉 签到成功 +100 积分！");
+      if (page === 'library') alert("📚 进入【社群资料库】（管理员可上传文件）");
+      if (page === 'products') alert("⭐ 进入【精选产品区】（支持参与/退出权限）");
+      if (page === 'promo') alert("📣 进入【推广中心】（生成专属海报）");
     }
   </script>
 </body>
