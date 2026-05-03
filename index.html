@@ -25,7 +25,12 @@
         <img src="https://miniature-peach-donkey.myfilebase.com/ipfs/QmUjRwaTVSpK9wvXvKJc7jdu5jjvb3XtADk9ZCtUB3bmWH" alt="Logo" class="w-10 h-10 rounded-2xl object-cover">
         <h1 class="text-2xl font-bold neon">名人纪念馆</h1>
       </div>
-      <button onclick="connectWallet()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold">连接钱包</button>
+      <div class="flex gap-3">
+        <button onclick="connectWallet()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold">连接钱包</button>
+        <button onclick="showAdmin()" class="px-6 py-3 glass rounded-3xl font-semibold flex items-center gap-2">
+          👑 管理员
+        </button>
+      </div>
     </nav>
 
     <!-- 首页 -->
@@ -91,8 +96,8 @@
       <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
       <h2 class="text-3xl font-bold mb-8">📣 推广中心</h2>
       
-      <select id="template-select" class="w-full glass rounded-2xl px-5 py-4 mb-4">
-        <!-- 动态添加模板 -->
+      <select id="template-select" class="w-full glass rounded-2xl px-5 py-4 mb-4 text-white">
+        <!-- 动态添加 -->
       </select>
       
       <input id="user-name" type="text" placeholder="输入你的名字/署名" class="w-full glass rounded-2xl px-6 py-5 text-lg mb-6">
@@ -112,7 +117,7 @@
       <h3 class="text-2xl font-bold mb-6">👑 管理员后台</h3>
       
       <div class="mb-8">
-        <h4 class="font-medium mb-3">添加资料（支持直接上传）</h4>
+        <h4 class="font-medium mb-3">添加资料</h4>
         <input id="new-file-name" placeholder="资料名称" class="w-full glass rounded-2xl px-5 py-4 mb-3">
         <input type="file" id="file-upload" class="w-full glass rounded-2xl px-5 py-4 mb-3">
         <button onclick="uploadFile()" class="w-full py-4 bg-green-600 rounded-3xl">上传并添加</button>
@@ -162,15 +167,15 @@
     }
 
     function uploadFile() {
-      const name = document.getElementById('new-file-name').value || "新文件";
+      const name = document.getElementById('new-file-name').value || "新资料";
       const fileInput = document.getElementById('file-upload');
       if (fileInput.files.length > 0) {
-        files.push({name: name, link: "#"});
+        files.push({name: name});
         renderFiles();
         hideAdmin();
-        alert("✅ 文件已上传并添加到资料库！");
+        alert("✅ 文件已成功上传！");
       } else {
-        alert("请选择文件");
+        alert("请先选择文件");
       }
     }
 
@@ -187,17 +192,15 @@
     function renderFiles() {
       const container = document.getElementById('file-list');
       container.innerHTML = files.map(f => `
-        <div class="glass rounded-3xl p-6 hover:bg-white/10 cursor-pointer">
-          <p class="font-medium">${f.name}</p>
+        <div class="glass rounded-3xl p-6 hover:bg-white/10">
+          <p class="font-medium">📄 ${f.name}</p>
         </div>
       `).join('');
     }
 
     function renderTemplates() {
       const select = document.getElementById('template-select');
-      if (select) {
-        select.innerHTML = templates.map((t, i) => `<option value="${i}">模板 ${i+1}</option>`).join('');
-      }
+      select.innerHTML = templates.map((_, i) => `<option value="${i}">模板 ${i+1}</option>`).join('');
     }
 
     function generateCustomPoster() {
