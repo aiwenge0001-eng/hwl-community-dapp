@@ -24,7 +24,7 @@
       <button onclick="connectWallet()" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold">连接钱包</button>
     </nav>
 
-    <!-- 推广海报生成器（已优化下载） -->
+    <!-- 推广海报生成器 -->
     <div class="glass rounded-3xl p-8">
       <h3 class="text-2xl font-semibold mb-6">📣 推广中心 - 专属海报</h3>
       
@@ -36,12 +36,16 @@
         生成我的专属海报
       </button>
 
-      <div id="poster-preview" class="hidden mt-4">
+      <div id="poster-preview" class="hidden mt-4 text-center">
         <canvas id="poster-canvas" width="600" height="380" class="mx-auto rounded-3xl shadow-2xl border border-purple-400/30"></canvas>
-        <button onclick="downloadPoster()" 
-                class="mt-6 w-full py-5 bg-white text-black rounded-3xl font-semibold text-lg flex items-center justify-center gap-2">
-          💾 保存并下载海报
-        </button>
+        
+        <div class="mt-6 space-y-3">
+          <button onclick="downloadPoster()" 
+                  class="w-full py-5 bg-white text-black rounded-3xl font-semibold text-lg">
+            💾 保存并下载海报
+          </button>
+          <p class="text-xs text-gray-400">苹果手机如果无法直接下载，长按图片 → “添加到相册” 即可保存</p>
+        </div>
       </div>
     </div>
 
@@ -54,21 +58,19 @@
       const ctx = canvas.getContext('2d');
       const preview = document.getElementById('poster-preview');
 
-      // 清空画布
       ctx.clearRect(0, 0, 600, 380);
 
       // 背景
       ctx.fillStyle = '#1a0033';
       ctx.fillRect(0, 0, 600, 380);
 
-      // 渐变
       const grad = ctx.createLinearGradient(0, 0, 600, 380);
       grad.addColorStop(0, '#6b21a8');
       grad.addColorStop(1, '#1e40af');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 600, 380);
 
-      // Logo / 标题
+      // 标题
       ctx.font = 'bold 52px Arial';
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
@@ -79,7 +81,7 @@
       ctx.fillStyle = '#c4d0ff';
       ctx.fillText(name, 300, 220);
 
-      // 底部口号
+      // 口号
       ctx.font = '24px Arial';
       ctx.fillStyle = '#a5b4fc';
       ctx.fillText('欢迎加入 · 一起赚加密', 300, 300);
@@ -90,13 +92,16 @@
     function downloadPoster() {
       const canvas = document.getElementById('poster-canvas');
       const link = document.createElement('a');
-      
-      // 强制触发下载
       link.download = `推广海报-${document.getElementById('user-name').value || '推广达人'}.png`;
-      link.href = canvas.toDataURL('image/png', 1.0);   // 最高质量
+      link.href = canvas.toDataURL('image/png', 1.0);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      // iOS 提示
+      if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        alert("✅ 海报已生成！\n\n如果没有自动下载，请长按上方图片 → “添加到相册”");
+      }
     }
   </script>
 </body>
