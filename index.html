@@ -30,28 +30,21 @@
       </div>
     </nav>
 
-    <!-- 首页 -->
-    <div id="page-home" class="page active">
-      <div class="text-center mb-12">
-        <h2 class="text-5xl font-bold mb-4 neon">欢迎来到你的专属加密家园</h2>
-        <p class="text-xl text-gray-300">资料库 · 精选项目 · 推广工具</p>
-      </div>
-      <!-- 动态和入口保持不变，省略以节省空间 -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div onclick="goToPage('library')" class="glass rounded-3xl p-10 text-center hover:scale-105 transition cursor-pointer">
-          <div class="text-6xl mb-6">📚</div><h3 class="text-2xl font-semibold">社群资料库</h3>
-        </div>
-        <!-- 其他两个入口省略 -->
-      </div>
-    </div>
-
     <!-- 资料库页面 -->
-    <div id="page-library" class="page">
+    <div id="page-library" class="page active">
       <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
       <h2 class="text-3xl font-bold mb-8">📚 社群资料库</h2>
       <div id="library-content" class="space-y-10"></div>
     </div>
 
+  </div>
+
+  <!-- 预览弹窗 -->
+  <div id="preview-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
+    <div class="max-w-4xl w-full mx-4">
+      <button onclick="closePreview()" class="mb-4 text-white text-xl">✕ 关闭</button>
+      <div id="preview-content" class="bg-black rounded-3xl overflow-hidden"></div>
+    </div>
   </div>
 
   <!-- 管理员后台 -->
@@ -83,34 +76,25 @@
       if (page === 'library') renderLibrary();
     }
 
-    function showAdmin() {
-      document.getElementById('admin-modal').classList.remove('hidden');
-    }
-
-    function hideAdmin() {
-      document.getElementById('admin-modal').classList.add('hidden');
-    }
+    function showAdmin() { document.getElementById('admin-modal').classList.remove('hidden'); }
+    function hideAdmin() { document.getElementById('admin-modal').classList.add('hidden'); }
 
     function uploadFile() {
       const category = document.getElementById('category-select').value;
-      const nameInput = document.getElementById('new-file-name').value.trim();
+      const name = document.getElementById('new-file-name').value.trim() || "未命名文件";
       const fileInput = document.getElementById('file-upload');
       
-      if (!fileInput.files.length) {
-        alert("请选择文件！");
-        return;
-      }
+      if (!fileInput.files.length) return alert("请选择文件");
 
       const file = fileInput.files[0];
-      const name = nameInput || file.name;
-
       const reader = new FileReader();
       reader.onload = function(e) {
         files.push({
           name: name,
           category: category,
-          dataUrl: e.target.result,   // 用于下载/查看
-          type: file.type
+          dataUrl: e.target.result,
+          type: file.type,
+          size: (file.size / 1024 / 1024).toFixed(2) + " MB"
         });
         saveFiles();
         renderLibrary();
@@ -131,15 +115,16 @@
       let html = '';
       Object.keys(grouped).forEach(cat => {
         html += `<div class="mb-10"><h3 class="text-xl font-semibold mb-4">${cat}</h3>`;
-        grouped[cat].forEach((f, i) => {
+        grouped[cat].forEach(f => {
           html += `
-            <a href="${f.dataUrl}" download="${f.name}" class="block glass rounded-3xl p-6 mb-3 hover:bg-white/10 transition flex justify-between items-center group">
+            <div onclick="openFile('${f.dataUrl}', '${f.type}', '${f.name}')" 
+                 class="glass rounded-3xl p-6 mb-3 hover:bg-white/10 transition flex justify-between items-center cursor-pointer">
               <div>
                 <p class="font-medium">${f.name}</p>
-                <p class="text-xs text-gray-400">${f.category}</p>
+                <p class="text-xs text-gray-400">${f.size || ''}</p>
               </div>
-              <span class="text-purple-400 group-hover:text-purple-300">📥 下载 / 查看</span>
-            </a>`;
+              <span class="text-purple-400">📥 查看 / 下载</span>
+            </div>`;
         });
         html += `</div>`;
       });
@@ -147,12 +132,35 @@
       container.innerHTML = html || '<p class="text-gray-400 text-center py-20">暂无资料，请点击右上角 👑 管理员 上传</p>';
     }
 
+    function openFile(dataUrl, type, name) {
+      const modal = document.getElementById('preview-modal');
+      const content = document.getElementById('preview-content');
+
+      if (type.startsWith('image/')) {
+        content.innerHTML = `<img src="${dataUrl}" class="max-h-[80vh] mx-auto">`;
+      } else if (type === 'application/pdf') {
+        content.innerHTML = `<iframe src="${dataUrl}" class="w-full h-[80vh]"></iframe>`;
+      } else {
+        // 其他文件（.docx 等）直接下载
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = name;
+        link.click();
+        return;
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function closePreview() {
+      document.getElementById('preview-modal').classList.add('hidden');
+    }
+
     function connectWallet() {
       alert("✅ 钱包连接成功！");
     }
 
     window.onload = () => {
-      goToPage('home');
+      goToPage('library');   // 默认进入资料库方便测试
     };
   </script>
 </body>
