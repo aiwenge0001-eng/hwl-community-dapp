@@ -19,16 +19,16 @@
 <body class="min-h-screen text-white">
   <div class="max-w-6xl mx-auto p-5 md:p-6">
 
-    <!-- 全局顶部导航 -->
+    <!-- 全局导航 -->
     <nav class="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
       <div onclick="goToPage('home')" class="flex items-center gap-3 cursor-pointer">
         <img src="https://miniature-peach-donkey.myfilebase.com/ipfs/QmUjRwaTVSpK9wvXvKJc7jdu5jjvb3XtADk9ZCtUB3bmWH" alt="Logo" class="w-10 h-10 rounded-2xl object-cover">
         <h1 class="text-2xl font-bold neon">名人纪念馆</h1>
       </div>
-      <button onclick="connectWallet()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold text-sm md:text-base">连接钱包</button>
+      <button onclick="connectWallet()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold">连接钱包</button>
     </nav>
 
-    <!-- ==================== 首页 ==================== -->
+    <!-- 首页 -->
     <div id="page-home" class="page active">
       <div class="text-center mb-12">
         <h2 class="text-5xl font-bold mb-4 neon">欢迎来到你的专属加密家园</h2>
@@ -72,26 +72,32 @@
       </div>
     </div>
 
-    <!-- ==================== 资料库页面 ==================== -->
+    <!-- 资料库页面 -->
     <div id="page-library" class="page">
       <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
       <h2 class="text-3xl font-bold mb-8">📚 社群资料库</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="file-list"></div>
     </div>
 
-    <!-- ==================== 精选产品页面 ==================== -->
+    <!-- 精选产品页面 -->
     <div id="page-products" class="page">
       <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
       <h2 class="text-3xl font-bold mb-8">⭐ 精选产品</h2>
       <div id="product-list" class="space-y-6"></div>
     </div>
 
-    <!-- ==================== 推广中心页面 ==================== -->
+    <!-- 推广中心页面（多模板） -->
     <div id="page-promo" class="page">
       <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
       <h2 class="text-3xl font-bold mb-8">📣 推广中心</h2>
+      
+      <select id="template-select" class="w-full glass rounded-2xl px-5 py-4 mb-4">
+        <!-- 动态添加模板 -->
+      </select>
+      
       <input id="user-name" type="text" placeholder="输入你的名字/署名" class="w-full glass rounded-2xl px-6 py-5 text-lg mb-6">
       <button onclick="generateCustomPoster()" class="w-full py-5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-3xl text-xl font-bold">生成我的专属海报</button>
+      
       <div id="poster-preview" class="hidden mt-6 text-center">
         <canvas id="poster-canvas" width="600" height="380" class="mx-auto rounded-3xl shadow-2xl"></canvas>
         <button onclick="downloadPoster()" class="mt-6 w-full py-5 bg-white text-black rounded-3xl font-semibold">💾 保存海报</button>
@@ -100,13 +106,34 @@
 
   </div>
 
+  <!-- 管理员后台 -->
+  <div id="admin-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+    <div class="glass max-w-lg w-full mx-4 rounded-3xl p-8">
+      <h3 class="text-2xl font-bold mb-6">👑 管理员后台</h3>
+      
+      <div class="mb-8">
+        <h4 class="font-medium mb-3">添加资料（支持直接上传）</h4>
+        <input id="new-file-name" placeholder="资料名称" class="w-full glass rounded-2xl px-5 py-4 mb-3">
+        <input type="file" id="file-upload" class="w-full glass rounded-2xl px-5 py-4 mb-3">
+        <button onclick="uploadFile()" class="w-full py-4 bg-green-600 rounded-3xl">上传并添加</button>
+      </div>
+
+      <div>
+        <h4 class="font-medium mb-3">添加推广海报模板</h4>
+        <input type="file" id="template-upload" class="w-full glass rounded-2xl px-5 py-4 mb-3">
+        <button onclick="uploadTemplate()" class="w-full py-4 bg-purple-600 rounded-3xl">添加模板</button>
+      </div>
+
+      <button onclick="hideAdmin()" class="mt-8 w-full py-4 text-gray-400">关闭</button>
+    </div>
+  </div>
+
   <script>
     let connectedAddress = null;
     let files = [];
+    let templates = ["https://miniature-peach-donkey.myfilebase.com/ipfs/QmUjRwaTVSpK9wvXvKJc7jdu5jjvb3XtADk9ZCtUB3bmWH"];
 
     async function connectWallet() {
-      const status = document.getElementById('wallet-status') || {innerHTML: ''};
-      status.innerHTML = "🔄 正在请求授权...";
       try {
         if (window.deboxWallet) {
           await window.deboxWallet.connect();
@@ -115,15 +142,62 @@
           await window.phantom.solana.connect();
           connectedAddress = window.phantom.solana.publicKey.toString();
         }
-        status.innerHTML = `✅ 已连接`;
+        alert(`✅ 钱包连接成功！`);
       } catch (e) {
-        status.innerHTML = "❌ 连接失败";
+        alert("❌ 连接失败");
       }
     }
 
     function goToPage(page) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(`page-${page}`).classList.add('active');
+    }
+
+    function showAdmin() {
+      document.getElementById('admin-modal').classList.remove('hidden');
+    }
+
+    function hideAdmin() {
+      document.getElementById('admin-modal').classList.add('hidden');
+    }
+
+    function uploadFile() {
+      const name = document.getElementById('new-file-name').value || "新文件";
+      const fileInput = document.getElementById('file-upload');
+      if (fileInput.files.length > 0) {
+        files.push({name: name, link: "#"});
+        renderFiles();
+        hideAdmin();
+        alert("✅ 文件已上传并添加到资料库！");
+      } else {
+        alert("请选择文件");
+      }
+    }
+
+    function uploadTemplate() {
+      const fileInput = document.getElementById('template-upload');
+      if (fileInput.files.length > 0) {
+        templates.push("#");
+        renderTemplates();
+        hideAdmin();
+        alert("✅ 新海报模板已添加！");
+      }
+    }
+
+    function renderFiles() {
+      const container = document.getElementById('file-list');
+      container.innerHTML = files.map(f => `
+        <div class="glass rounded-3xl p-6 hover:bg-white/10 cursor-pointer">
+          <p class="font-medium">${f.name}</p>
+        </div>
+      `).join('');
+    }
+
+    function renderTemplates() {
+      const select = document.getElementById('template-select');
+      if (select) {
+        select.innerHTML = templates.map((t, i) => `<option value="${i}">模板 ${i+1}</option>`).join('');
+      }
     }
 
     function generateCustomPoster() {
@@ -158,6 +232,7 @@
 
     window.onload = () => {
       goToPage('home');
+      renderTemplates();
     };
   </script>
 </body>
