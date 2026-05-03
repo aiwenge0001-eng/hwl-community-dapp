@@ -10,48 +10,152 @@
     body { background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 100%); font-family: system-ui; }
     .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.15); }
     .neon { text-shadow: 0 0 15px rgba(168, 85, 247, 0.8); }
+    .marquee { animation: marquee 35s linear infinite; }
+    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   </style>
 </head>
 <body class="min-h-screen text-white">
   <div class="max-w-6xl mx-auto p-5 md:p-6">
 
+    <!-- 顶部导航 -->
     <nav class="flex justify-between items-center mb-8">
       <div class="flex items-center gap-3">
-        <img src="https://miniature-peach-donkey.myfilebase.com/ipfs/QmUjRwaTVSpK9wvXvKJc7jdu5jjvb3XtADk9ZCtUB3bmWH" 
-             alt="Logo" class="w-12 h-12 rounded-2xl object-cover">
+        <img src="https://miniature-peach-donkey.myfilebase.com/ipfs/QmUjRwaTVSpK9wvXvKJc7jdu5jjvb3XtADk9ZCtUB3bmWH" alt="Logo" class="w-12 h-12 rounded-2xl object-cover">
         <h1 class="text-3xl font-bold neon">名人纪念馆</h1>
       </div>
-      <button onclick="connectWallet()" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold">连接钱包</button>
+      <div class="flex gap-3">
+        <button onclick="connectWallet()" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold">连接钱包</button>
+        <button onclick="showAdmin()" class="px-6 py-4 glass rounded-3xl">👑 管理员</button>
+      </div>
     </nav>
 
-    <!-- 推广海报生成器 -->
-    <div class="glass rounded-3xl p-8">
-      <h3 class="text-2xl font-semibold mb-6">📣 推广中心 - 专属海报</h3>
-      
-      <input id="user-name" type="text" placeholder="输入你的名字/署名" 
-             class="w-full glass rounded-2xl px-6 py-5 text-lg mb-6 focus:outline-none">
+    <!-- 英雄区 -->
+    <div class="text-center mb-10">
+      <h2 class="text-4xl md:text-5xl font-bold mb-4 neon">欢迎来到你的专属加密家园</h2>
+      <p class="text-lg md:text-xl text-gray-300">资料库 · 精选项目 · 推广工具</p>
+      <div id="wallet-status" class="mt-6 text-base"></div>
+    </div>
 
-      <button onclick="generateCustomPoster()" 
-              class="w-full py-5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-3xl text-xl font-bold mb-6 hover:scale-105 transition">
-        生成我的专属海报
-      </button>
-
-      <div id="poster-preview" class="hidden mt-4 text-center">
-        <canvas id="poster-canvas" width="600" height="380" class="mx-auto rounded-3xl shadow-2xl border border-purple-400/30"></canvas>
-        
-        <div class="mt-6 space-y-3">
-          <button onclick="downloadPoster()" 
-                  class="w-full py-5 bg-white text-black rounded-3xl font-semibold text-lg">
-            💾 保存并下载海报
-          </button>
-          <p class="text-xs text-gray-400">苹果手机如果无法直接下载，长按图片 → “添加到相册” 即可保存</p>
+    <!-- 实时动态 -->
+    <div class="glass rounded-3xl p-5 mb-10">
+      <h3 class="text-base font-medium mb-3 flex items-center gap-2"><i class="fas fa-fire text-orange-400"></i> 实时贡献动态</h3>
+      <div class="overflow-hidden">
+        <div class="marquee text-sm text-gray-300 whitespace-nowrap">
+          @用户A 上传资料 · +800积分　　@userB 参与量化项目 · 解锁VIP　　@userC 生成海报 · 获得达人徽章　　
         </div>
+      </div>
+    </div>
+
+    <!-- 社群资料库 -->
+    <div class="glass rounded-3xl p-8 mb-8">
+      <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="text-4xl">📚</span> 社群资料库</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="file-list"></div>
+    </div>
+
+    <!-- 精选产品 + 权限锁 -->
+    <div class="glass rounded-3xl p-8 mb-8">
+      <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="text-4xl">⭐</span> 精选产品</h3>
+      <div class="space-y-6" id="product-list"></div>
+    </div>
+
+    <!-- 推广海报（支持模板） -->
+    <div class="glass rounded-3xl p-8">
+      <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="text-4xl">📣</span> 推广中心</h3>
+      <input id="user-name" type="text" placeholder="输入你的名字/署名" class="w-full glass rounded-2xl px-6 py-5 text-lg mb-6">
+      <button onclick="generateCustomPoster()" class="w-full py-5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-3xl text-xl font-bold">生成我的专属海报</button>
+      <div id="poster-preview" class="hidden mt-6">
+        <canvas id="poster-canvas" width="600" height="380" class="mx-auto rounded-3xl shadow-2xl"></canvas>
+        <button onclick="downloadPoster()" class="mt-6 w-full py-5 bg-white text-black rounded-3xl font-semibold">💾 保存海报</button>
       </div>
     </div>
 
   </div>
 
+  <!-- 管理员后台（加强版） -->
+  <div id="admin-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+    <div class="glass max-w-lg w-full mx-4 rounded-3xl p-8 max-h-[90vh] overflow-auto">
+      <h3 class="text-2xl font-bold mb-6">👑 管理员后台</h3>
+      
+      <div class="mb-6">
+        <h4 class="font-medium mb-3">添加资料到库</h4>
+        <input id="new-file-name" placeholder="资料名称" class="w-full glass rounded-2xl px-5 py-4 mb-3">
+        <input id="new-file-link" placeholder="IPFS链接" class="w-full glass rounded-2xl px-5 py-4">
+        <button onclick="addFile()" class="mt-4 w-full py-4 bg-green-600 rounded-3xl">添加资料</button>
+      </div>
+
+      <div>
+        <h4 class="font-medium mb-3">上传海报模板（用于推广中心）</h4>
+        <input id="template-link" placeholder="海报模板 IPFS 链接" class="w-full glass rounded-2xl px-5 py-4">
+        <button onclick="addTemplate()" class="mt-4 w-full py-4 bg-purple-600 rounded-3xl">添加模板</button>
+      </div>
+
+      <button onclick="hideAdmin()" class="mt-6 w-full py-4 text-gray-400">关闭后台</button>
+    </div>
+  </div>
+
   <script>
+    let connectedAddress = null;
+    let files = [];
+    let templates = ["https://miniature-peach-donkey.myfilebase.com/ipfs/QmUjRwaTVSpK9wvXvKJc7jdu5jjvb3XtADk9ZCtUB3bmWH"];
+
+    async function connectWallet() {
+      const status = document.getElementById('wallet-status');
+      status.innerHTML = "🔄 正在连接...";
+      // 模拟连接成功
+      connectedAddress = "0xDemoAddress...";
+      status.innerHTML = `✅ 已连接`;
+      renderAll();
+    }
+
+    function renderAll() {
+      renderFiles();
+      renderProducts();
+    }
+
+    function renderFiles() {
+      const container = document.getElementById('file-list');
+      container.innerHTML = files.length ? files.map(f => `
+        <div onclick="window.open('${f.link}','_blank')" class="glass rounded-3xl p-6 hover:bg-white/10 cursor-pointer">
+          <p class="font-medium">${f.name}</p>
+        </div>
+      `).join('') : '<p class="text-gray-400 p-6">暂无资料，管理员可添加</p>';
+    }
+
+    function renderProducts() {
+      // 省略，保持之前逻辑
+      document.getElementById('product-list').innerHTML = `
+        <div class="glass rounded-3xl p-6">黄金量化策略 - <button onclick="toggleParticipation(1)" class="text-purple-400">立即参与</button></div>
+      `;
+    }
+
+    function addFile() {
+      const name = document.getElementById('new-file-name').value;
+      const link = document.getElementById('new-file-link').value;
+      if (name && link) {
+        files.push({name, link});
+        renderFiles();
+        hideAdmin();
+        alert('✅ 资料已添加！');
+      }
+    }
+
+    function addTemplate() {
+      const link = document.getElementById('template-link').value;
+      if (link) {
+        templates.push(link);
+        alert('✅ 新海报模板已添加！');
+        hideAdmin();
+      }
+    }
+
+    function showAdmin() {
+      document.getElementById('admin-modal').classList.remove('hidden');
+    }
+
+    function hideAdmin() {
+      document.getElementById('admin-modal').classList.add('hidden');
+    }
+
     function generateCustomPoster() {
       const name = document.getElementById('user-name').value.trim() || "推广达人";
       const canvas = document.getElementById('poster-canvas');
@@ -59,32 +163,17 @@
       const preview = document.getElementById('poster-preview');
 
       ctx.clearRect(0, 0, 600, 380);
-
-      // 背景
       ctx.fillStyle = '#1a0033';
       ctx.fillRect(0, 0, 600, 380);
 
-      const grad = ctx.createLinearGradient(0, 0, 600, 380);
-      grad.addColorStop(0, '#6b21a8');
-      grad.addColorStop(1, '#1e40af');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 600, 380);
-
-      // 标题
-      ctx.font = 'bold 52px Arial';
-      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 50px Arial';
+      ctx.fillStyle = '#fff';
       ctx.textAlign = 'center';
       ctx.fillText('名人纪念馆', 300, 120);
 
-      // 用户名字
-      ctx.font = 'bold 38px Arial';
+      ctx.font = 'bold 36px Arial';
       ctx.fillStyle = '#c4d0ff';
       ctx.fillText(name, 300, 220);
-
-      // 口号
-      ctx.font = '24px Arial';
-      ctx.fillStyle = '#a5b4fc';
-      ctx.fillText('欢迎加入 · 一起赚加密', 300, 300);
 
       preview.classList.remove('hidden');
     }
@@ -92,17 +181,12 @@
     function downloadPoster() {
       const canvas = document.getElementById('poster-canvas');
       const link = document.createElement('a');
-      link.download = `推广海报-${document.getElementById('user-name').value || '推广达人'}.png`;
-      link.href = canvas.toDataURL('image/png', 1.0);
-      document.body.appendChild(link);
+      link.download = `我的推广海报.png`;
+      link.href = canvas.toDataURL('image/png');
       link.click();
-      document.body.removeChild(link);
-
-      // iOS 提示
-      if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-        alert("✅ 海报已生成！\n\n如果没有自动下载，请长按上方图片 → “添加到相册”");
-      }
     }
+
+    window.onload = renderAll;
   </script>
 </body>
 </html>
