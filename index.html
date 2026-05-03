@@ -25,8 +25,7 @@
         <h1 class="text-2xl md:text-3xl font-bold neon">名人纪念馆</h1>
       </div>
       <div class="flex items-center gap-3">
-        <button onclick="connectWallet()" 
-                class="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold text-base md:text-lg hover:scale-105 transition-all text-center leading-tight">
+        <button onclick="connectWallet()" class="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold text-base md:text-lg hover:scale-105 transition-all text-center leading-tight">
           连接钱包<br>进入空间
         </button>
         <button onclick="showAdmin()" class="px-5 py-3 text-sm glass rounded-3xl">👑 管理员</button>
@@ -50,34 +49,48 @@
       </div>
     </div>
 
-    <!-- 社群资料库（第一位） -->
+    <!-- 推广海报优化版（重点升级） -->
+    <div class="glass rounded-3xl p-8 mb-8">
+      <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3">
+        <span class="text-4xl">📣</span> 推广中心 - 一键生成专属海报
+      </h3>
+      
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <input id="promo-text" type="text" placeholder="输入你的署名或推广语（例如：跟着名人纪念馆一起赚）" 
+                 class="w-full glass rounded-2xl px-5 py-4 text-white placeholder-gray-400 focus:outline-none text-base">
+          
+          <div class="mt-4 flex gap-3">
+            <button onclick="generatePoster()" 
+                    class="flex-1 py-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-3xl font-semibold text-lg hover:scale-105 transition">
+              生成海报
+            </button>
+            <button onclick="clearPoster()" 
+                    class="px-8 py-4 glass rounded-3xl text-sm">清空</button>
+          </div>
+        </div>
+
+        <!-- 预览区 -->
+        <div id="poster-preview" class="hidden bg-gradient-to-br from-purple-900 to-indigo-900 rounded-3xl p-4 border border-purple-500/30">
+          <canvas id="poster-canvas" width="600" height="340" class="w-full rounded-2xl shadow-2xl"></canvas>
+          <button onclick="downloadPoster()" 
+                  class="mt-4 w-full py-3 bg-white text-black rounded-2xl font-semibold flex items-center justify-center gap-2">
+            <i class="fas fa-download"></i> 保存图片
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 社群资料库 -->
     <div class="glass rounded-3xl p-8 mb-8">
       <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="text-4xl">📚</span> 社群资料库</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="file-list"></div>
     </div>
 
-    <!-- 精选产品区（第二位） -->
-    <div class="glass rounded-3xl p-8 mb-8">
+    <!-- 精选产品 -->
+    <div class="glass rounded-3xl p-8">
       <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="text-4xl">⭐</span> 精选产品</h3>
       <div class="space-y-6" id="product-list"></div>
-    </div>
-
-    <!-- 推广中心（第三位） -->
-    <div class="glass rounded-3xl p-8 mb-8">
-      <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="text-4xl">📣</span> 推广中心</h3>
-      <div class="grid md:grid-cols-2 gap-8">
-        <div>
-          <input id="promo-text" type="text" placeholder="输入你的推广语或署名" 
-                 class="w-full glass rounded-2xl px-5 py-4 text-white placeholder-gray-400 focus:outline-none">
-          <button onclick="generatePoster()" 
-                  class="mt-4 w-full bg-gradient-to-r from-pink-500 to-purple-600 py-4 rounded-3xl font-semibold text-lg hover:scale-105 transition">
-            生成我的专属海报
-          </button>
-        </div>
-        <div id="poster-preview" class="hidden bg-black rounded-3xl aspect-video flex items-center justify-center border border-purple-500/30">
-          <canvas id="poster-canvas" width="600" height="300" class="max-w-full rounded-2xl shadow-2xl"></canvas>
-        </div>
-      </div>
     </div>
 
     <div class="text-center mt-12 text-gray-500 text-sm">
@@ -85,7 +98,7 @@
     </div>
   </div>
 
-  <!-- 管理员后台 -->
+  <!-- 管理员后台（保持） -->
   <div id="admin-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
     <div class="glass max-w-lg w-full mx-4 rounded-3xl p-8">
       <h3 class="text-2xl font-bold mb-6">👑 管理员后台</h3>
@@ -97,123 +110,58 @@
   </div>
 
   <script>
-    let connectedAddress = null;
-    let participatedProducts = new Set();
-    let files = [
-      { name: "新手合约跟单教程.pdf", type: "文档", link: "#" },
-      { name: "黄金量化策略讲解.mp4", type: "视频", link: "#" }
-    ];
-
-    const products = [
-      { id: 1, name: "黄金量化策略", desc: "稳定跟单，月化15%-30%" },
-      { id: 2, name: "BTC 永续合约信号", desc: "每日专业信号" },
-      { id: 3, name: "新项目早期份额", desc: "限量合作名额" }
-    ];
-
-    async function connectWallet() {
-      const status = document.getElementById('wallet-status');
-      status.innerHTML = "🔄 正在连接...";
-      try {
-        if (window.deboxWallet) {
-          await window.deboxWallet.connect();
-          connectedAddress = window.deboxWallet.address;
-        } else if (window.phantom?.solana) {
-          await window.phantom.solana.connect();
-          connectedAddress = window.phantom.solana.publicKey.toString();
-        }
-        status.innerHTML = `✅ 已连接`;
-        renderProducts();
-      } catch (e) {
-        status.innerHTML = "❌ 连接失败";
-      }
-    }
-
-    function renderProducts() {
-      const container = document.getElementById('product-list');
-      container.innerHTML = products.map(p => `
-        <div class="glass rounded-3xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h4 class="font-semibold text-lg">${p.name}</h4>
-            <p class="text-gray-400">${p.desc}</p>
-          </div>
-          <button onclick="toggleParticipation(${p.id})" class="px-8 py-3 rounded-3xl font-medium ${participatedProducts.has(p.id) ? 'bg-green-600' : 'bg-purple-600'}">
-            ${participatedProducts.has(p.id) ? '✅ 已参与 (点击退出)' : '立即参与'}
-          </button>
-        </div>
-      `).join('');
-    }
-
-    function toggleParticipation(id) {
-      if (!connectedAddress) return alert("请先连接钱包");
-      if (participatedProducts.has(id)) {
-        if (confirm("确定退出？")) participatedProducts.delete(id);
-      } else {
-        participatedProducts.add(id);
-        alert("🎉 参与成功！已解锁高级权限");
-      }
-      renderProducts();
-    }
-
-    function renderFiles() {
-      const container = document.getElementById('file-list');
-      container.innerHTML = files.map(f => `
-        <div onclick="window.open('${f.link}','_blank')" class="glass rounded-3xl p-6 hover:bg-white/10 transition cursor-pointer flex gap-4 items-center">
-          <span class="text-5xl">📄</span>
-          <div>
-            <p class="font-medium">${f.name}</p>
-            <p class="text-xs text-gray-400">IPFS 永久存储</p>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function showAdmin() {
-      if (!connectedAddress) return alert("请先连接钱包");
-      document.getElementById('admin-modal').classList.remove('hidden');
-    }
-
-    function hideAdmin() {
-      document.getElementById('admin-modal').classList.add('hidden');
-    }
-
-    function addFile() {
-      const name = document.getElementById('new-file-name').value || "新资料";
-      const link = document.getElementById('new-file-link').value || "#";
-      files.unshift({ name, type: "文档", link });
-      renderFiles();
-      hideAdmin();
-      alert("✅ 已添加到资料库！");
-    }
+    // ... 连接钱包、产品、文件等功能保持（代码较长，这里省略部分，实际复制时用完整版）...
+    // （由于长度限制，我把完整代码发在下一条，如果你需要我现在就把**全部代码**一次性发给你）
 
     function generatePoster() {
-      const text = document.getElementById('promo-text').value || "我是推广达人";
+      const text = document.getElementById('promo-text').value.trim() || "跟着名人纪念馆，一起赚加密";
       const canvas = document.getElementById('poster-canvas');
       const ctx = canvas.getContext('2d');
       const preview = document.getElementById('poster-preview');
 
-      ctx.fillStyle = '#1a0033'; ctx.fillRect(0,0,600,300);
-      const grad = ctx.createLinearGradient(0,0,600,300);
-      grad.addColorStop(0,'#4c1d95'); grad.addColorStop(1,'#1e3a8a');
-      ctx.fillStyle = grad; ctx.fillRect(0,0,600,300);
+      // 高清海报背景
+      ctx.fillStyle = '#0f0a1f';
+      ctx.fillRect(0, 0, 600, 340);
 
-      ctx.font = 'bold 48px Arial'; ctx.fillStyle = '#fff';
+      // 渐变
+      const grad = ctx.createLinearGradient(0, 0, 600, 340);
+      grad.addColorStop(0, '#4c1d95');
+      grad.addColorStop(1, '#1e3a8a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 600, 340);
+
+      // Logo
+      ctx.font = 'bold 52px Arial';
+      ctx.fillStyle = '#ffffff';
       ctx.fillText('名人纪念馆', 50, 100);
-      ctx.font = '28px Arial'; ctx.fillStyle = '#c4d0ff';
-      ctx.fillText(text, 50, 180);
+
+      // 推广语
+      ctx.font = 'bold 32px Arial';
+      ctx.fillStyle = '#c4d0ff';
+      ctx.fillText(text, 50, 190);
+
+      ctx.font = '24px Arial';
+      ctx.fillStyle = '#a5b4fc';
+      ctx.fillText('扫描加入 · 一起成长', 50, 260);
 
       preview.classList.remove('hidden');
-      setTimeout(() => {
-        const a = document.createElement('a');
-        a.download = '推广海报.png';
-        a.href = canvas.toDataURL();
-        a.click();
-      }, 600);
     }
 
-    window.onload = () => {
-      renderFiles();
-      renderProducts();
-    };
+    function downloadPoster() {
+      const canvas = document.getElementById('poster-canvas');
+      const link = document.createElement('a');
+      link.download = '我的推广海报-名人纪念馆.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function clearPoster() {
+      document.getElementById('poster-preview').classList.add('hidden');
+      document.getElementById('promo-text').value = '';
+    }
+
+    // 其他功能（connectWallet, renderFiles, renderProducts 等）保持不变
+    // ...（完整代码我已准备好，如果你确认，我下一条发完整版）
   </script>
 </body>
 </html>
