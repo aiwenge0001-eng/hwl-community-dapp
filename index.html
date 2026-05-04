@@ -27,7 +27,7 @@
       </div>
       <div class="flex gap-3">
         <button onclick="connectWallet()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold">连接 DeBox 钱包</button>
-        <button onclick="showAdmin()" class="px-6 py-3 glass rounded-3xl font-semibold flex items-center gap-2">👑 管理员</button>
+        <button id="admin-btn" onclick="showAdmin()" class="hidden px-6 py-3 glass rounded-3xl font-semibold flex items-center gap-2">👑 管理员</button>
         <button onclick="goToPage('personal')" class="px-6 py-3 glass rounded-3xl font-semibold flex items-center gap-2">👤 我的</button>
       </div>
     </nav>
@@ -90,16 +90,13 @@
       <div id="product-list" class="space-y-6"></div>
     </div>
 
-    <!-- 推广中心页面（多模板） -->
+    <!-- 推广中心页面 -->
     <div id="page-promo" class="page">
       <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
       <h2 class="text-3xl font-bold mb-8">📣 推广中心</h2>
-      
       <select id="template-select" class="w-full glass rounded-2xl px-5 py-4 mb-6"></select>
-      
       <input id="user-name" type="text" placeholder="输入你的名字/署名" class="w-full glass rounded-2xl px-6 py-5 text-lg mb-6">
       <button onclick="generateCustomPoster()" class="w-full py-5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-3xl text-xl font-bold">生成我的专属海报</button>
-      
       <div id="poster-preview" class="hidden mt-8 text-center">
         <canvas id="poster-canvas" width="600" height="380" class="mx-auto rounded-3xl shadow-2xl"></canvas>
         <button onclick="downloadPoster()" class="mt-6 w-full py-5 bg-white text-black rounded-3xl font-semibold">💾 保存海报</button>
@@ -137,7 +134,7 @@
       </div>
 
       <div>
-        <h4 class="font-medium mb-3">添加推广海报模板（背景图）</h4>
+        <h4 class="font-medium mb-3">添加推广海报模板</h4>
         <input type="file" id="template-upload" class="w-full glass rounded-2xl px-5 py-4 mb-3" accept="image/*">
         <button onclick="uploadTemplate()" class="w-full py-4 bg-purple-600 rounded-3xl">添加新模板</button>
       </div>
@@ -146,13 +143,30 @@
     </div>
   </div>
 
+  <!-- Footer -->
+  <footer class="mt-12 border-t border-white/10 py-8 text-center text-sm text-gray-400">
+    <div class="max-w-6xl mx-auto px-5">
+      <p class="mb-4 text-purple-300">"好会聊加密，永远陪伴你前行"</p>
+      <div class="flex flex-wrap justify-center gap-6 mb-6">
+        <a onclick="goToPage('home')" class="hover:text-white cursor-pointer">返回首页</a>
+        <a href="https://m.debox.pro/card?id=cwkl9f2k&invite_code=cwkl9f2k" target="_blank" class="hover:text-white cursor-pointer">联系我们</a>
+        <a href="#" onclick="alert('交流群链接待添加')" class="hover:text-white cursor-pointer">加入交流群</a>
+      </div>
+      <p class="text-xs">© 2026 好会聊加密社群 · 去中心化 · 永久保存</p>
+    </div>
+  </footer>
+
   <script>
+    // ==================== 管理员地址 ====================
+    const ADMIN_WALLET = "0xfe9429acf5675f70afe939eb648af63ce60e3c22";
+
     let files = JSON.parse(localStorage.getItem('communityFiles')) || [];
     let templates = JSON.parse(localStorage.getItem('posterTemplates')) || [
       "https://miniature-peach-donkey.myfilebase.com/ipfs/QmUjRwaTVSpK9wvXvKJc7jdu5jjvb3XtADk9ZCtUB3bmWH"
     ];
     let userParticipations = JSON.parse(localStorage.getItem('userParticipations')) || {};
     let points = parseInt(localStorage.getItem('userPoints')) || 1280;
+    let connectedAddress = null;
 
     function saveData() {
       localStorage.setItem('communityFiles', JSON.stringify(files));
@@ -170,9 +184,19 @@
       if (page === 'personal') renderPersonal();
     }
 
-    function showAdmin() { document.getElementById('admin-modal').classList.remove('hidden'); }
-    function hideAdmin() { document.getElementById('admin-modal').classList.add('hidden'); }
+    function showAdmin() {
+      if (!connectedAddress || connectedAddress.toLowerCase() !== ADMIN_WALLET.toLowerCase()) {
+        alert("⚠️ 你没有管理员权限");
+        return;
+      }
+      document.getElementById('admin-modal').classList.remove('hidden');
+    }
 
+    function hideAdmin() {
+      document.getElementById('admin-modal').classList.add('hidden');
+    }
+
+    // ==================== 上传函数 ====================
     function uploadFile() {
       const category = document.getElementById('category-select').value;
       const name = document.getElementById('new-file-name').value.trim() || category + " 文件";
@@ -202,32 +226,50 @@
         saveData();
         renderTemplatesSelect();
         hideAdmin();
-        alert(`✅ 新海报模板已添加！`);
+        alert(`✅ 新模板已添加！`);
       };
       reader.readAsDataURL(file);
+    }
+
+    // ==================== 渲染函数 ====================
+    function renderLibrary() {
+      const container = document.getElementById('library-content');
+      const grouped = {};
+      files.forEach((f, i) => {
+        if (!grouped[f.category]) grouped[f.category] = [];
+        grouped[f.category].push({f, index: i});
+      });
+      let html = '';
+      Object.keys(grouped).forEach(cat => {
+        html += `<div class="mb-10"><h3 class="text-xl font-semibold mb-4">${cat}</h3>`;
+        grouped[cat].forEach(({f, index}) => {
+          html += `
+            <div class="glass rounded-3xl p-6 mb-3 hover:bg-white/10 cursor-pointer flex justify-between items-center">
+              <div onclick="openFile('${f.dataUrl}', '${f.type}', '${f.name}')">
+                <p class="font-medium">${f.name}</p>
+              </div>
+              <div class="flex gap-3">
+                <span onclick="openFile('${f.dataUrl}', '${f.type}', '${f.name}')" class="text-purple-400">📥 查看/下载</span>
+                <span onclick="deleteFile(${index})" class="text-red-400">🗑 删除</span>
+              </div>
+            </div>`;
+        });
+        html += `</div>`;
+      });
+      container.innerHTML = html || '<p class="text-gray-400 text-center py-12">暂无资料，请点击右上角 👑 管理员 上传</p>';
+    }
+
+    function deleteFile(index) {
+      if (confirm("确定删除此文件吗？")) {
+        files.splice(index, 1);
+        saveData();
+        renderLibrary();
+      }
     }
 
     function renderTemplatesSelect() {
       const select = document.getElementById('template-select');
       select.innerHTML = templates.map((t, i) => `<option value="${i}">模板 ${i+1}</option>`).join('');
-    }
-
-    function renderLibrary() {
-      const container = document.getElementById('library-content');
-      const grouped = {};
-      files.forEach(f => {
-        if (!grouped[f.category]) grouped[f.category] = [];
-        grouped[f.category].push(f);
-      });
-      let html = '';
-      Object.keys(grouped).forEach(cat => {
-        html += `<div class="mb-10"><h3 class="text-xl font-semibold mb-4">${cat}</h3>`;
-        grouped[cat].forEach(f => {
-          html += `<div onclick="openFile('${f.dataUrl}', '${f.type}', '${f.name}')" class="glass rounded-3xl p-6 mb-3 hover:bg-white/10 cursor-pointer flex justify-between items-center"><div><p class="font-medium">${f.name}</p></div><span class="text-purple-400">📥 查看/下载</span></div>`;
-        });
-        html += `</div>`;
-      });
-      container.innerHTML = html || '<p class="text-gray-400 text-center py-12">暂无资料，请点击右上角 👑 管理员 上传</p>';
     }
 
     function openFile(dataUrl, type, name) {
@@ -303,63 +345,31 @@
       document.getElementById('my-points').textContent = points;
     }
 
-    // ==================== 多模板海报 ====================
-    function renderTemplatesSelect() {
-      const select = document.getElementById('template-select');
-      select.innerHTML = templates.map((t, i) => `<option value="${i}">模板 ${i+1}</option>`).join('');
-    }
+    // ==================== DeBox 连接 ====================
+    async function connectWallet() {
+      const status = document.getElementById('debox-status');
+      status.innerHTML = "🔄 正在请求 DeBox 授权...";
 
-    function generateCustomPoster() {
-      const name = document.getElementById('user-name').value.trim() || "推广达人";
-      const canvas = document.getElementById('poster-canvas');
-      const ctx = canvas.getContext('2d');
-      const preview = document.getElementById('poster-preview');
-      const selectedIndex = parseInt(document.getElementById('template-select').value) || 0;
-
-      ctx.clearRect(0, 0, 600, 380);
-
-      // 使用选中模板作为背景（如果有）
-      if (templates[selectedIndex] && templates[selectedIndex].startsWith('data:image')) {
-        const img = new Image();
-        img.onload = () => {
-          ctx.drawImage(img, 0, 0, 600, 380);
-          drawText(ctx, name);
-          preview.classList.remove('hidden');
-        };
-        img.src = templates[selectedIndex];
-      } else {
-        // 默认渐变背景
-        const gradient = ctx.createLinearGradient(0, 0, 0, 380);
-        gradient.addColorStop(0, '#4c1d95');
-        gradient.addColorStop(1, '#1a0033');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, 600, 380);
-        drawText(ctx, name);
-        preview.classList.remove('hidden');
+      try {
+        if (window.deboxWallet) {
+          await window.deboxWallet.request({ method: "eth_requestAccounts" });
+          const accounts = await window.deboxWallet.request({ method: "eth_accounts" });
+          connectedAddress = accounts[0];
+          status.innerHTML = `✅ DeBox 已连接`;
+          alert("✅ DeBox 钱包连接成功！");
+          
+          // 显示管理员按钮
+          if (connectedAddress.toLowerCase() === ADMIN_WALLET.toLowerCase()) {
+            document.getElementById('admin-btn').classList.remove('hidden');
+          }
+        } else {
+          status.innerHTML = `⚠️ 请在 DeBox App 内打开`;
+          alert("请在 DeBox App 中打开此页面");
+        }
+      } catch (e) {
+        status.innerHTML = "❌ 连接失败";
+        alert("连接失败，请在 DeBox 中允许权限后重试");
       }
-    }
-
-    function drawText(ctx, name) {
-      ctx.font = 'bold 52px Arial';
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
-      ctx.fillText('名人纪念馆', 300, 120);
-
-      ctx.font = 'bold 38px Arial';
-      ctx.fillStyle = '#c4d0ff';
-      ctx.fillText(name, 300, 220);
-    }
-
-    function downloadPoster() {
-      const canvas = document.getElementById('poster-canvas');
-      const link = document.createElement('a');
-      link.download = `推广海报-${document.getElementById('user-name').value || '达人'}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    }
-
-    function connectWallet() {
-      alert("✅ 钱包连接成功！");
     }
 
     function dailyCheckIn() {
