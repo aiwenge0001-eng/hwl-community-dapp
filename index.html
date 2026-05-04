@@ -89,14 +89,11 @@
       <div id="library-content" class="space-y-10"></div>
     </div>
 
-    <!-- 精选产品页面 -->
+    <!-- 精选产品页面（权限锁核心） -->
     <div id="page-products" class="page">
       <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
       <h2 class="text-3xl font-bold mb-8">⭐ 精选产品</h2>
-      <div class="glass rounded-3xl p-8 text-center">
-        <p class="text-xl">精选产品区</p>
-        <p class="text-gray-400 mt-4">后续将支持合约、量化项目参与/退出权限锁</p>
-      </div>
+      <div id="product-list" class="space-y-6"></div>
     </div>
 
     <!-- 推广中心页面 -->
@@ -121,6 +118,10 @@
         <p class="text-sm text-gray-400">当前积分</p>
         <button onclick="dailyCheckIn()" class="mt-6 px-10 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-3xl font-semibold">每日签到 +100</button>
       </div>
+      <div class="mt-8 glass rounded-3xl p-6">
+        <h3 class="font-semibold mb-4">我的参与项目</h3>
+        <div id="my-participations" class="space-y-3"></div>
+      </div>
     </div>
 
   </div>
@@ -143,10 +144,12 @@
 
   <script>
     let files = JSON.parse(localStorage.getItem('communityFiles')) || [];
+    let participations = JSON.parse(localStorage.getItem('participations')) || [];
     let points = parseInt(localStorage.getItem('userPoints')) || 1280;
 
     function saveData() {
       localStorage.setItem('communityFiles', JSON.stringify(files));
+      localStorage.setItem('participations', JSON.stringify(participations));
       localStorage.setItem('userPoints', points);
     }
 
@@ -154,6 +157,8 @@
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(`page-${page}`).classList.add('active');
       if (page === 'library') renderLibrary();
+      if (page === 'products') renderProducts();
+      if (page === 'personal') renderPersonal();
     }
 
     function showAdmin() { document.getElementById('admin-modal').classList.remove('hidden'); }
@@ -209,6 +214,57 @@
       }
     }
 
+    // 精选产品 + 权限锁
+    const productsData = [
+      { id: 1, name: "黄金量化跟单", desc: "稳定收益，月化15%-25%", status: "参与中" },
+      { id: 2, name: "Solana 合约套利", desc: "高频交易工具", status: "未参与" },
+      { id: 3, name: "DeBox 社群VIP", desc: "独家项目优先权", status: "未参与" }
+    ];
+
+    let userParticipations = JSON.parse(localStorage.getItem('userParticipations')) || {};
+
+    function renderProducts() {
+      const container = document.getElementById('product-list');
+      let html = '';
+      productsData.forEach(p => {
+        const isJoined = userParticipations[p.id];
+        html += `
+          <div class="glass rounded-3xl p-8">
+            <h3 class="text-2xl font-semibold">${p.name}</h3>
+            <p class="text-gray-400 mt-2">${p.desc}</p>
+            <div class="mt-6 flex gap-4">
+              ${isJoined ? 
+                `<button onclick="exitProject(${p.id})" class="flex-1 py-4 bg-red-600 rounded-3xl">退出项目</button>` :
+                `<button onclick="joinProject(${p.id})" class="flex-1 py-4 bg-green-600 rounded-3xl">立即参与</button>`
+              }
+            </div>
+          </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function joinProject(id) {
+      userParticipations[id] = true;
+      points += 300;
+      localStorage.setItem('userParticipations', JSON.stringify(userParticipations));
+      saveData();
+      alert("🎉 参与成功！已获得300积分 + VIP权限");
+      renderProducts();
+      renderPersonal();
+    }
+
+    function exitProject(id) {
+      delete userParticipations[id];
+      localStorage.setItem('userParticipations', JSON.stringify(userParticipations));
+      alert("已退出项目，权限已降级");
+      renderProducts();
+      renderPersonal();
+    }
+
+    function renderPersonal() {
+      document.getElementById('my-points').textContent = points;
+    }
+
     function connectWallet() {
       alert("✅ 钱包连接成功！");
     }
@@ -217,7 +273,7 @@
       points += 100;
       saveData();
       alert("🎉 签到成功 +100 积分！");
-      if (document.getElementById('my-points')) document.getElementById('my-points').textContent = points;
+      renderPersonal();
     }
 
     window.onload = () => {
