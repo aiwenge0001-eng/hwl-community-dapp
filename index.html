@@ -32,7 +32,7 @@
       </div>
     </nav>
 
-    <!-- 首页 -->
+    <!-- ==================== 首页 ==================== -->
     <div id="page-home" class="page active">
       <div class="text-center mb-12">
         <h2 class="text-5xl font-bold mb-4 neon">欢迎来到你的专属加密家园</h2>
@@ -90,13 +90,16 @@
       <div id="product-list" class="space-y-6"></div>
     </div>
 
-    <!-- 推广中心页面 -->
+    <!-- 推广中心页面（多模板） -->
     <div id="page-promo" class="page">
       <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
       <h2 class="text-3xl font-bold mb-8">📣 推广中心</h2>
+      
       <select id="template-select" class="w-full glass rounded-2xl px-5 py-4 mb-6"></select>
+      
       <input id="user-name" type="text" placeholder="输入你的名字/署名" class="w-full glass rounded-2xl px-6 py-5 text-lg mb-6">
       <button onclick="generateCustomPoster()" class="w-full py-5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-3xl text-xl font-bold">生成我的专属海报</button>
+      
       <div id="poster-preview" class="hidden mt-8 text-center">
         <canvas id="poster-canvas" width="600" height="380" class="mx-auto rounded-3xl shadow-2xl"></canvas>
         <button onclick="downloadPoster()" class="mt-6 w-full py-5 bg-white text-black rounded-3xl font-semibold">💾 保存海报</button>
@@ -120,25 +123,40 @@
   <div id="admin-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
     <div class="glass max-w-lg w-full mx-4 rounded-3xl p-8">
       <h3 class="text-2xl font-bold mb-6">👑 管理员后台</h3>
-      <select id="category-select" class="w-full glass rounded-2xl px-5 py-4 mb-4">
-        <option value="网页链接">🔗 网页链接</option>
-        <option value="App应用">📱 App应用</option>
-        <option value="项目材料">📦 项目材料</option>
-      </select>
-      <input id="new-file-name" placeholder="资料名称" class="w-full glass rounded-2xl px-5 py-4 mb-3">
-      <input type="file" id="file-upload" class="w-full glass rounded-2xl px-5 py-4 mb-3">
-      <button onclick="uploadFile()" class="w-full py-4 bg-green-600 rounded-3xl">上传并保存</button>
-      <button onclick="hideAdmin()" class="mt-6 w-full py-4 text-gray-400">关闭</button>
+      
+      <div class="mb-8">
+        <h4 class="font-medium mb-3">添加资料</h4>
+        <select id="category-select" class="w-full glass rounded-2xl px-5 py-4 mb-4">
+          <option value="网页链接">🔗 网页链接</option>
+          <option value="App应用">📱 App应用</option>
+          <option value="项目材料">📦 项目材料</option>
+        </select>
+        <input id="new-file-name" placeholder="资料名称" class="w-full glass rounded-2xl px-5 py-4 mb-3">
+        <input type="file" id="file-upload" class="w-full glass rounded-2xl px-5 py-4 mb-3">
+        <button onclick="uploadFile()" class="w-full py-4 bg-green-600 rounded-3xl">上传并保存</button>
+      </div>
+
+      <div>
+        <h4 class="font-medium mb-3">添加推广海报模板（背景图）</h4>
+        <input type="file" id="template-upload" class="w-full glass rounded-2xl px-5 py-4 mb-3" accept="image/*">
+        <button onclick="uploadTemplate()" class="w-full py-4 bg-purple-600 rounded-3xl">添加新模板</button>
+      </div>
+
+      <button onclick="hideAdmin()" class="mt-8 w-full py-4 text-gray-400">关闭</button>
     </div>
   </div>
 
   <script>
     let files = JSON.parse(localStorage.getItem('communityFiles')) || [];
+    let templates = JSON.parse(localStorage.getItem('posterTemplates')) || [
+      "https://miniature-peach-donkey.myfilebase.com/ipfs/QmUjRwaTVSpK9wvXvKJc7jdu5jjvb3XtADk9ZCtUB3bmWH"
+    ];
     let userParticipations = JSON.parse(localStorage.getItem('userParticipations')) || {};
     let points = parseInt(localStorage.getItem('userPoints')) || 1280;
 
     function saveData() {
       localStorage.setItem('communityFiles', JSON.stringify(files));
+      localStorage.setItem('posterTemplates', JSON.stringify(templates));
       localStorage.setItem('userParticipations', JSON.stringify(userParticipations));
       localStorage.setItem('userPoints', points);
     }
@@ -148,6 +166,7 @@
       document.getElementById(`page-${page}`).classList.add('active');
       if (page === 'library') renderLibrary();
       if (page === 'products') renderProducts();
+      if (page === 'promo') renderTemplatesSelect();
       if (page === 'personal') renderPersonal();
     }
 
@@ -170,6 +189,27 @@
         alert(`✅ 上传成功！`);
       };
       reader.readAsDataURL(file);
+    }
+
+    function uploadTemplate() {
+      const fileInput = document.getElementById('template-upload');
+      if (!fileInput.files.length) return alert("请选择模板图片");
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        templates.push(e.target.result);
+        saveData();
+        renderTemplatesSelect();
+        hideAdmin();
+        alert(`✅ 新海报模板已添加！`);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderTemplatesSelect() {
+      const select = document.getElementById('template-select');
+      select.innerHTML = templates.map((t, i) => `<option value="${i}">模板 ${i+1}</option>`).join('');
     }
 
     function renderLibrary() {
@@ -204,7 +244,7 @@
       }
     }
 
-    // ==================== 精选产品 4个固定项目 ====================
+    // ==================== 精选产品 ====================
     const productsData = [
       { id: 1, name: "币圈合约量化跟单", desc: "高频套利工具，稳定收益，月化15%-100%", reward: 500 },
       { id: 2, name: "黄金量化套利", desc: "即将上线", reward: 600 },
@@ -222,8 +262,7 @@
             <div class="glass rounded-3xl p-8">
               <h3 class="text-2xl font-semibold">${p.name}</h3>
               <p class="text-gray-400 mt-2">${p.desc}</p>
-              <a href="https://m.debox.pro/card?id=cwkl9f2k&invite_code=cwkl9f2k" target="_blank" 
-                 class="block mt-6 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-center rounded-3xl font-semibold">联系我</a>
+              <a href="https://m.debox.pro/card?id=cwkl9f2k&invite_code=cwkl9f2k" target="_blank" class="block mt-6 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-center rounded-3xl font-semibold">联系我</a>
             </div>`;
         } else {
           html += `
@@ -264,37 +303,63 @@
       document.getElementById('my-points').textContent = points;
     }
 
-    // ==================== DeBox 深度整合（按官方文档优化） ====================
-    async function connectWallet() {
-      const status = document.getElementById('debox-status');
-      status.innerHTML = "🔄 正在请求 DeBox 授权...";
+    // ==================== 多模板海报 ====================
+    function renderTemplatesSelect() {
+      const select = document.getElementById('template-select');
+      select.innerHTML = templates.map((t, i) => `<option value="${i}">模板 ${i+1}</option>`).join('');
+    }
 
-      try {
-        if (window.deboxWallet) {
-          // 官方授权流程
-          await window.deboxWallet.request({
-            method: "eth_requestAccounts"
-          });
+    function generateCustomPoster() {
+      const name = document.getElementById('user-name').value.trim() || "推广达人";
+      const canvas = document.getElementById('poster-canvas');
+      const ctx = canvas.getContext('2d');
+      const preview = document.getElementById('poster-preview');
+      const selectedIndex = parseInt(document.getElementById('template-select').value) || 0;
 
-          const accounts = await window.deboxWallet.request({
-            method: "eth_accounts"
-          });
+      ctx.clearRect(0, 0, 600, 380);
 
-          status.innerHTML = `✅ DeBox 已连接<br><small>${accounts[0] ? accounts[0].slice(0,8) + '...' : ''}</small>`;
-          alert("✅ DeBox 钱包连接成功！");
-        } else if (window.phantom?.solana) {
-          await window.phantom.solana.connect();
-          status.innerHTML = `✅ Phantom 已连接`;
-          alert("✅ Phantom 钱包连接成功！");
-        } else {
-          status.innerHTML = `⚠️ 请在 DeBox App 内打开此页面`;
-          alert("请在 DeBox App 中打开此页面");
-        }
-      } catch (e) {
-        console.error(e);
-        status.innerHTML = "❌ 连接失败";
-        alert("连接失败，请在 DeBox 中允许权限后重试");
+      // 使用选中模板作为背景（如果有）
+      if (templates[selectedIndex] && templates[selectedIndex].startsWith('data:image')) {
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, 600, 380);
+          drawText(ctx, name);
+          preview.classList.remove('hidden');
+        };
+        img.src = templates[selectedIndex];
+      } else {
+        // 默认渐变背景
+        const gradient = ctx.createLinearGradient(0, 0, 0, 380);
+        gradient.addColorStop(0, '#4c1d95');
+        gradient.addColorStop(1, '#1a0033');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 600, 380);
+        drawText(ctx, name);
+        preview.classList.remove('hidden');
       }
+    }
+
+    function drawText(ctx, name) {
+      ctx.font = 'bold 52px Arial';
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.fillText('名人纪念馆', 300, 120);
+
+      ctx.font = 'bold 38px Arial';
+      ctx.fillStyle = '#c4d0ff';
+      ctx.fillText(name, 300, 220);
+    }
+
+    function downloadPoster() {
+      const canvas = document.getElementById('poster-canvas');
+      const link = document.createElement('a');
+      link.download = `推广海报-${document.getElementById('user-name').value || '达人'}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function connectWallet() {
+      alert("✅ 钱包连接成功！");
     }
 
     function dailyCheckIn() {
@@ -306,9 +371,7 @@
 
     window.onload = () => {
       goToPage('home');
-      if (window.deboxWallet || navigator.userAgent.includes('DeBox')) {
-        document.getElementById('debox-status').innerHTML = `✅ DeBox 环境已检测`;
-      }
+      renderTemplatesSelect();
     };
   </script>
 </body>
