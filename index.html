@@ -37,6 +37,7 @@
       <div class="text-center mb-12">
         <h2 class="text-5xl font-bold mb-4 neon">欢迎来到你的专属加密家园</h2>
         <p class="text-xl text-gray-300">资料库 · 精选项目 · 推广工具</p>
+        <div id="debox-status" class="mt-4 text-sm"></div>
       </div>
 
       <div class="glass rounded-3xl p-5 mb-8 bg-gradient-to-r from-purple-900/30 to-transparent">
@@ -82,7 +83,7 @@
       <div id="library-content" class="space-y-10"></div>
     </div>
 
-    <!-- 精选产品页面（已按你要求修改为4个固定项目） -->
+    <!-- 精选产品页面 -->
     <div id="page-products" class="page">
       <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
       <h2 class="text-3xl font-bold mb-8">⭐ 精选产品</h2>
@@ -203,33 +204,36 @@
       }
     }
 
-    // ==================== 精选产品 - 4个固定项目 ====================
-    const productsData = [
-      { 
-        id: 1, 
-        name: "币圈合约量化跟单", 
-        desc: "高频套利工具，稳定收益，月化15%-100%", 
-        reward: 500 
-      },
-      { 
-        id: 2, 
-        name: "黄金量化套利", 
-        desc: "即将上线", 
-        reward: 600 
-      },
-      { 
-        id: 3, 
-        name: "DeBox社群", 
-        desc: "独家项目优先参与权", 
-        reward: 300 
-      },
-      { 
-        id: 4, 
-        name: "项目合作上架", 
-        desc: "有好项目可联系我上架", 
-        reward: 0,
-        isContact: true 
+    // ==================== DeBox 深度整合 ====================
+    async function connectWallet() {
+      const status = document.getElementById('debox-status');
+      status.innerHTML = "🔄 正在连接...";
+
+      try {
+        if (window.deboxWallet) {
+          await window.deboxWallet.connect();
+          status.innerHTML = `✅ <span class="text-green-400">DeBox 已连接</span>`;
+          alert("✅ DeBox 钱包连接成功！");
+        } else if (window.phantom?.solana) {
+          await window.phantom.solana.connect();
+          status.innerHTML = `✅ <span class="text-blue-400">Phantom 已连接</span>`;
+          alert("✅ Phantom 钱包连接成功！");
+        } else {
+          status.innerHTML = `⚠️ 请在 DeBox 中打开此页面`;
+          alert("请在 DeBox App 内打开此 DApp 以获得最佳体验");
+        }
+      } catch (e) {
+        status.innerHTML = "❌ 连接失败";
+        alert("连接失败，请重试");
       }
+    }
+
+    // ==================== 精选产品权限锁 ====================
+    const productsData = [
+      { id: 1, name: "币圈合约量化跟单", desc: "高频套利工具，稳定收益，月化15%-100%", reward: 500 },
+      { id: 2, name: "黄金量化套利", desc: "即将上线", reward: 600 },
+      { id: 3, name: "DeBox社群", desc: "独家项目优先参与权", reward: 300 },
+      { id: 4, name: "项目合作上架", desc: "有好项目可联系我上架", reward: 0, isContact: true }
     ];
 
     function renderProducts() {
@@ -284,10 +288,6 @@
       document.getElementById('my-points').textContent = points;
     }
 
-    function connectWallet() {
-      alert("✅ 钱包连接成功！");
-    }
-
     function dailyCheckIn() {
       points += 100;
       saveData();
@@ -297,6 +297,10 @@
 
     window.onload = () => {
       goToPage('home');
+      // DeBox 环境检测
+      if (window.deboxWallet) {
+        document.getElementById('debox-status').innerHTML = `✅ <span class="text-green-400">DeBox 环境已检测</span>`;
+      }
     };
   </script>
 </body>
