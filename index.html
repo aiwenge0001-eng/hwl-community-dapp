@@ -82,7 +82,7 @@
       <div id="library-content" class="space-y-10"></div>
     </div>
 
-    <!-- 精选产品页面（权限锁） -->
+    <!-- 精选产品页面（已按你要求修改为4个固定项目） -->
     <div id="page-products" class="page">
       <button onclick="goToPage('home')" class="mb-6 text-purple-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> 返回首页</button>
       <h2 class="text-3xl font-bold mb-8">⭐ 精选产品</h2>
@@ -110,10 +110,6 @@
         <p class="text-4xl font-bold text-purple-400" id="my-points">1280</p>
         <p class="text-sm text-gray-400">当前积分</p>
         <button onclick="dailyCheckIn()" class="mt-6 px-10 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-3xl font-semibold">每日签到 +100</button>
-      </div>
-      <div class="mt-8 glass rounded-3xl p-6">
-        <h3 class="font-semibold mb-4">我的参与项目</h3>
-        <div id="my-participations" class="space-y-3"></div>
       </div>
     </div>
 
@@ -207,11 +203,33 @@
       }
     }
 
-    // ==================== 精选产品权限锁 ====================
+    // ==================== 精选产品 - 4个固定项目 ====================
     const productsData = [
-      { id: 1, name: "黄金量化跟单", desc: "稳定月化15%-25%，低风险", reward: 500 },
-      { id: 2, name: "Solana 合约套利", desc: "高频交易工具，需一定资金", reward: 800 },
-      { id: 3, name: "DeBox VIP社群", desc: "独家项目优先参与权", reward: 300 }
+      { 
+        id: 1, 
+        name: "币圈合约量化跟单", 
+        desc: "高频套利工具，稳定收益，月化15%-100%", 
+        reward: 500 
+      },
+      { 
+        id: 2, 
+        name: "黄金量化套利", 
+        desc: "即将上线", 
+        reward: 600 
+      },
+      { 
+        id: 3, 
+        name: "DeBox社群", 
+        desc: "独家项目优先参与权", 
+        reward: 300 
+      },
+      { 
+        id: 4, 
+        name: "项目合作上架", 
+        desc: "有好项目可联系我上架", 
+        reward: 0,
+        isContact: true 
+      }
     ];
 
     function renderProducts() {
@@ -219,18 +237,28 @@
       let html = '';
       productsData.forEach(p => {
         const isJoined = userParticipations[p.id];
-        html += `
-          <div class="glass rounded-3xl p-8">
-            <h3 class="text-2xl font-semibold">${p.name}</h3>
-            <p class="text-gray-400 mt-2">${p.desc}</p>
-            <p class="text-sm text-purple-400 mt-1">参与奖励：${p.reward} 积分</p>
-            <div class="mt-6 flex gap-4">
-              ${isJoined ? 
-                `<button onclick="exitProject(${p.id})" class="flex-1 py-4 bg-red-600 rounded-3xl font-semibold">退出项目（降级权限）</button>` :
-                `<button onclick="joinProject(${p.id})" class="flex-1 py-4 bg-green-600 rounded-3xl font-semibold">立即参与</button>`
-              }
-            </div>
-          </div>`;
+        if (p.isContact) {
+          html += `
+            <div class="glass rounded-3xl p-8">
+              <h3 class="text-2xl font-semibold">${p.name}</h3>
+              <p class="text-gray-400 mt-2">${p.desc}</p>
+              <a href="https://m.debox.pro/card?id=cwkl9f2k&invite_code=cwkl9f2k" target="_blank" 
+                 class="block mt-6 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-center rounded-3xl font-semibold">联系我</a>
+            </div>`;
+        } else {
+          html += `
+            <div class="glass rounded-3xl p-8">
+              <h3 class="text-2xl font-semibold">${p.name}</h3>
+              <p class="text-gray-400 mt-2">${p.desc}</p>
+              <p class="text-sm text-purple-400 mt-1">参与奖励：${p.reward} 积分</p>
+              <div class="mt-6 flex gap-4">
+                ${isJoined ? 
+                  `<button onclick="exitProject(${p.id})" class="flex-1 py-4 bg-red-600 rounded-3xl font-semibold">退出项目</button>` :
+                  `<button onclick="joinProject(${p.id})" class="flex-1 py-4 bg-green-600 rounded-3xl font-semibold">立即参与</button>`
+                }
+              </div>
+            </div>`;
+        }
       });
       container.innerHTML = html;
     }
