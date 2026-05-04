@@ -32,7 +32,7 @@
       </div>
     </nav>
 
-    <!-- ==================== 首页 ==================== -->
+    <!-- 首页 -->
     <div id="page-home" class="page active">
       <div class="text-center mb-12">
         <h2 class="text-5xl font-bold mb-4 neon">欢迎来到你的专属加密家园</h2>
@@ -264,15 +264,23 @@
       document.getElementById('my-points').textContent = points;
     }
 
-    // ==================== DeBox 深度整合 ====================
+    // ==================== DeBox 深度整合（按官方文档优化） ====================
     async function connectWallet() {
       const status = document.getElementById('debox-status');
       status.innerHTML = "🔄 正在请求 DeBox 授权...";
 
       try {
         if (window.deboxWallet) {
-          await window.deboxWallet.connect();
-          status.innerHTML = `✅ <span class="text-green-400">DeBox 已成功连接</span>`;
+          // 官方授权流程
+          await window.deboxWallet.request({
+            method: "eth_requestAccounts"
+          });
+
+          const accounts = await window.deboxWallet.request({
+            method: "eth_accounts"
+          });
+
+          status.innerHTML = `✅ DeBox 已连接<br><small>${accounts[0] ? accounts[0].slice(0,8) + '...' : ''}</small>`;
           alert("✅ DeBox 钱包连接成功！");
         } else if (window.phantom?.solana) {
           await window.phantom.solana.connect();
@@ -280,11 +288,12 @@
           alert("✅ Phantom 钱包连接成功！");
         } else {
           status.innerHTML = `⚠️ 请在 DeBox App 内打开此页面`;
-          alert("建议在 DeBox App 中打开此 DApp");
+          alert("请在 DeBox App 中打开此页面");
         }
       } catch (e) {
+        console.error(e);
         status.innerHTML = "❌ 连接失败";
-        alert("连接失败，请重试或检查 DeBox 权限");
+        alert("连接失败，请在 DeBox 中允许权限后重试");
       }
     }
 
