@@ -26,7 +26,7 @@
         <h1 class="text-2xl font-bold neon">名人纪念馆</h1>
       </div>
       <div class="flex gap-3">
-        <button onclick="connectWallet()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold">连接钱包</button>
+        <button onclick="connectWallet()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl font-semibold">连接 DeBox 钱包</button>
         <button onclick="showAdmin()" class="px-6 py-3 glass rounded-3xl font-semibold flex items-center gap-2">👑 管理员</button>
         <button onclick="goToPage('personal')" class="px-6 py-3 glass rounded-3xl font-semibold flex items-center gap-2">👤 我的</button>
       </div>
@@ -37,7 +37,7 @@
       <div class="text-center mb-12">
         <h2 class="text-5xl font-bold mb-4 neon">欢迎来到你的专属加密家园</h2>
         <p class="text-xl text-gray-300">资料库 · 精选项目 · 推广工具</p>
-        <div id="debox-status" class="mt-4 text-sm"></div>
+        <div id="debox-status" class="mt-6 text-sm font-medium"></div>
       </div>
 
       <div class="glass rounded-3xl p-5 mb-8 bg-gradient-to-r from-purple-900/30 to-transparent">
@@ -204,31 +204,7 @@
       }
     }
 
-    // ==================== DeBox 深度整合 ====================
-    async function connectWallet() {
-      const status = document.getElementById('debox-status');
-      status.innerHTML = "🔄 正在连接...";
-
-      try {
-        if (window.deboxWallet) {
-          await window.deboxWallet.connect();
-          status.innerHTML = `✅ <span class="text-green-400">DeBox 已连接</span>`;
-          alert("✅ DeBox 钱包连接成功！");
-        } else if (window.phantom?.solana) {
-          await window.phantom.solana.connect();
-          status.innerHTML = `✅ <span class="text-blue-400">Phantom 已连接</span>`;
-          alert("✅ Phantom 钱包连接成功！");
-        } else {
-          status.innerHTML = `⚠️ 请在 DeBox 中打开此页面`;
-          alert("请在 DeBox App 内打开此 DApp 以获得最佳体验");
-        }
-      } catch (e) {
-        status.innerHTML = "❌ 连接失败";
-        alert("连接失败，请重试");
-      }
-    }
-
-    // ==================== 精选产品权限锁 ====================
+    // ==================== 精选产品 4个固定项目 ====================
     const productsData = [
       { id: 1, name: "币圈合约量化跟单", desc: "高频套利工具，稳定收益，月化15%-100%", reward: 500 },
       { id: 2, name: "黄金量化套利", desc: "即将上线", reward: 600 },
@@ -288,6 +264,30 @@
       document.getElementById('my-points').textContent = points;
     }
 
+    // ==================== DeBox 深度整合 ====================
+    async function connectWallet() {
+      const status = document.getElementById('debox-status');
+      status.innerHTML = "🔄 正在请求 DeBox 授权...";
+
+      try {
+        if (window.deboxWallet) {
+          await window.deboxWallet.connect();
+          status.innerHTML = `✅ <span class="text-green-400">DeBox 已成功连接</span>`;
+          alert("✅ DeBox 钱包连接成功！");
+        } else if (window.phantom?.solana) {
+          await window.phantom.solana.connect();
+          status.innerHTML = `✅ Phantom 已连接`;
+          alert("✅ Phantom 钱包连接成功！");
+        } else {
+          status.innerHTML = `⚠️ 请在 DeBox App 内打开此页面`;
+          alert("建议在 DeBox App 中打开此 DApp");
+        }
+      } catch (e) {
+        status.innerHTML = "❌ 连接失败";
+        alert("连接失败，请重试或检查 DeBox 权限");
+      }
+    }
+
     function dailyCheckIn() {
       points += 100;
       saveData();
@@ -297,9 +297,8 @@
 
     window.onload = () => {
       goToPage('home');
-      // DeBox 环境检测
-      if (window.deboxWallet) {
-        document.getElementById('debox-status').innerHTML = `✅ <span class="text-green-400">DeBox 环境已检测</span>`;
+      if (window.deboxWallet || navigator.userAgent.includes('DeBox')) {
+        document.getElementById('debox-status').innerHTML = `✅ DeBox 环境已检测`;
       }
     };
   </script>
